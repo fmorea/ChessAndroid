@@ -291,10 +291,12 @@ public class GameLogic {
     }
 
     public boolean isLegalMove(int y0, int x0, int y, int x){
-        if (pseudoLegalMove(y0,x0,y,x) && !isInCheck(y0,x0)){
-            return true;
+        if (pseudoLegalMove(y0,x0,y,x)){
+            if(!isInCheck(y0,x0)){
+                return true;
+            }
         }
-        else return false;
+        return false;
     }
 
 
@@ -303,8 +305,11 @@ public class GameLogic {
                 !isInsideChessBoard(y0,x0,y,x) || //se i numeri inseriti non sono validi
                 ((y0 == y) && (x0 == x)) ||  // se la casella di partenza è uguale a quella di destinazione
                 (toccaAlBianco() && isNero(y0, x0)) || // se vuoi muovere un pezzo di colore diverso
-                (toccaAlNero() && isBianco(y0, x0))  ||
-                (getTipoPezzo(y0,x0) == 'p' && !(x == x0 || x == x0+1 || x == x0-1 )) // rispetto al colore del turno corrente
+                (toccaAlNero() && isBianco(y0, x0))  || // rispetto al colore del turno corrente
+                (getTipoPezzo(y0,x0) == 'p' && !(x == x0 || x == x0+1 || x == x0-1 )) ||
+                (getTipoPezzo(y0,x0) == 'r' && !(x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1)) ||
+                (getTipoPezzo(y0,x0) == 't' && !(x == x0 || y == y0) ||
+                        (getTipoPezzo(y0,x0) == 'a' && !((x0 + y0) % 2 == (x + y) % 2)))
 
         ) {
             return false;
