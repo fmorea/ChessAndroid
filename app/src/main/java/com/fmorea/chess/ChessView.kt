@@ -12,8 +12,8 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     private var originX = 20f
     private var originY = 200f
     private var cellSide = 130f
-    private val lightColor = Color.parseColor("#EEEEEE")
-    private val darkColor = Color.parseColor("#BBBBBB")
+    private val lightColor = Color.parseColor("#2D942D")
+    private val darkColor = Color.parseColor("#DEDFC4")
     private val imgResIDs = setOf(
         R.drawable.bishop_black,
         R.drawable.bishop_white,

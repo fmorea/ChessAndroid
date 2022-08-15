@@ -1,5 +1,7 @@
 package com.fmorea.chess;
 
+import java.util.Objects;
+
 public class Movement {
     private int x;
     private int y;
@@ -28,6 +30,19 @@ public class Movement {
 
     public int getY0() {
         return y0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Movement movement = (Movement) o;
+        return x == movement.x && y == movement.y && x0 == movement.x0 && y0 == movement.y0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, x0, y0);
     }
 
     // Overriding toString() method of String class
