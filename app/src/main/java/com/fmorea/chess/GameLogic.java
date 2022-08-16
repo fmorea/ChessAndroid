@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * le rimanenti 2 lettere centrali del nome possono essere utilizzate come meta-dati in casi particolari
  */
 public class GameLogic {
-    private String[][] matrix;
+    private final String[][] matrix;
     private boolean toccaAlBianco = true;
     private boolean lockTurn = false;
 
@@ -180,27 +180,19 @@ public class GameLogic {
     }
 
     public boolean isEmpty(int y, int x) {
-        if (this.getPezzo(y, x) == null) {
-            return true;
-        } else return false;
+        return this.getPezzo(y, x) == null;
     }
 
     public boolean isBianco(int y, int x) {
-        if (getColorePezzo(y, x) == 'B') {
-            return true;
-        } else return false;
+        return getColorePezzo(y, x) == 'B';
     }
 
     public boolean isNero(int y, int x) {
-        if (getColorePezzo(y, x) == 'N') {
-            return true;
-        } else return false;
+        return getColorePezzo(y, x) == 'N';
     }
 
     public boolean isNotRe(int y, int x) {
-        if (getTipoPezzo(y, x) != 'r' && !isEmpty(y, x)) {
-            return true;
-        } else return false;
+        return getTipoPezzo(y, x) != 'r' && !isEmpty(y, x);
     }
 
     public boolean thereIsAnEatablePieceByPawn(int y0, int x0, int y, int x) {
@@ -251,12 +243,9 @@ public class GameLogic {
     }
 
     public boolean isEnPassantAble(int y, int x) {
-        if (getTipoPezzo(y, x) == 'p' &&
+        return getTipoPezzo(y, x) == 'p' &&
                 getPezzo(y, x).charAt(2) == 'd' &&
-                getPezzo(y, x).charAt(1) == '1'
-        ) {
-            return true;
-        } else return false;
+                getPezzo(y, x).charAt(1) == '1';
     }
 
     public boolean isInCheck(){
@@ -284,17 +273,12 @@ public class GameLogic {
     }
 
     public boolean isInCheck(int y0, int x0){
-        if (getTipoPezzo(y0,x0)!= 'r' && isInCheck()){
-            return true;
-        }
-        return false;
+        return getTipoPezzo(y0, x0) != 'r' && isInCheck();
     }
 
     public boolean isLegalMove(int y0, int x0, int y, int x){
         if (pseudoLegalMove(y0,x0,y,x)){
-            if(!isInCheck(y0,x0)){
-                return true;
-            }
+            return !isInCheck(y0, x0);
         }
         return false;
     }
@@ -306,11 +290,13 @@ public class GameLogic {
                 ((y0 == y) && (x0 == x)) ||  // se la casella di partenza è uguale a quella di destinazione
                 (toccaAlBianco() && isNero(y0, x0)) || // se vuoi muovere un pezzo di colore diverso
                 (toccaAlNero() && isBianco(y0, x0))  || // rispetto al colore del turno corrente
-                (getTipoPezzo(y0,x0) == 'p' && !(x == x0 || x == x0+1 || x == x0-1 )) ||
+                // condizioni per scartare subito un mucchio di caselle
+                (getTipoPezzo(y0,x0) == 'p' && !(x == x0 || x == x0+1 || x == x0-1 || y > y0+2 || y<y0-2)) ||
                 (getTipoPezzo(y0,x0) == 'r' && !(x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1)) ||
                 (getTipoPezzo(y0,x0) == 't' && !(x == x0 || y == y0) ||
-                        (getTipoPezzo(y0,x0) == 'a' && !((x0 + y0) % 2 == (x + y) % 2)))
-
+                (getTipoPezzo(y0,x0) == 'a' && !((x0 + y0) % 2 == (x + y) % 2)) ||
+                (getTipoPezzo(y0,x0) == 'a' && (y == y0 || x == x0)) ||
+                (getTipoPezzo(y0,x0) == 'c' && (x > x0 + 3 || x < x0 - 3 || y > y0 + 3 || y < y0 - 3)) )
         ) {
             return false;
         }
@@ -511,7 +497,7 @@ public class GameLogic {
     }
 
     public ArrayList<Movement> validMoves(){
-
+        long startTime = System.currentTimeMillis();
         Movement toTest = null;
         ArrayList legalMoves= new ArrayList<>();
 
@@ -530,6 +516,8 @@ public class GameLogic {
                 }
             }
         }
+        long totalTime = startTime - System.currentTimeMillis();
+        System.out.println(totalTime);
         return legalMoves;
     }
 
@@ -538,9 +526,7 @@ public class GameLogic {
     }
 
     public boolean isInsideChessBoard(int w) {
-        if (w <= 0 || w > 8) {
-            return false;
-        } else return true;
+        return w > 0 && w <= 8;
     }
 
     public boolean isInsideChessBoard(int w,int e) {
@@ -551,20 +537,16 @@ public class GameLogic {
     }
 
     public boolean isInsideChessBoard(int w,int e, int r) {
-        if (    w <= 0 || w > 8 ||
-                e <= 0 || e > 8 ||
-                r <= 0 || r > 8) {
-            return false;
-        } else return true;
+        return w > 0 && w <= 8 &&
+                e > 0 && e <= 8 &&
+                r > 0 && r <= 8;
     }
 
     public boolean isInsideChessBoard(int w,int e, int r, int t) {
-        if (    w <= 0 || w > 8 ||
-                e <= 0 || e > 8 ||
-                r <= 0 || r > 8 ||
-                t <= 0 || t > 8) {
-            return false;
-        } else return true;
+        return w > 0 && w <= 8 &&
+                e > 0 && e <= 8 &&
+                r > 0 && r <= 8 &&
+                t > 0 && t <= 8;
     }
 
 
