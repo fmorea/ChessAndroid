@@ -2,6 +2,7 @@ package com.fmorea.chess
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import kotlinx.android.synthetic.main.activity_main.*
 import android.util.Log
 
 const val TAG = "MainActivity"
@@ -15,6 +16,9 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
         setContentView(R.layout.activity_main)
 
         findViewById<ChessView>(R.id.chess_view).chessDelegate = this
+        switch1?.setOnCheckedChangeListener({ _ , isChecked ->
+            chessModel.switchOn = true;
+        })
     }
 
     override fun pieceAt(col: Int, row: Int): ChessPiece? {
@@ -22,7 +26,27 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
     }
 
     override fun movePiece(fromCol: Int, fromRow: Int, toCol: Int, toRow: Int) {
-        chessModel.movePiece(fromCol, fromRow, toCol, toRow)
+        var hasMoved = chessModel.movePiece(fromCol, fromRow, toCol, toRow)
+        if(chessModel.gameLogic.toccaAlBianco()){
+            textView.text = "White moves"
+        }
+        else{
+            textView.text = "Black moves"
+        }
+        if (!hasMoved){
+            textView2.text="Illegal Move"
+        }
+        else{
+            textView2.text=""
+        }
         findViewById<ChessView>(R.id.chess_view).invalidate()
+    }
+
+    override fun SwitchOn(): Boolean? {
+        return chessModel.switchOn
+    }
+
+    override fun getLegalMoves() : ArrayList<Movement>{
+        return chessModel.gameLogic.legalMoves
     }
 }

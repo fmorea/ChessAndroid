@@ -10,10 +10,10 @@ import kotlin.math.min
 class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
     private val scaleFactor = 1.0f
     private var originX = 20f
-    private var originY = 200f
+    private var originY = 20f
     private var cellSide = 130f
-    private val lightColor = Color.parseColor("#2D942D")
-    private val darkColor = Color.parseColor("#DEDFC4")
+    private var lightColor = Color.parseColor("#2D942D")
+    private var darkColor = Color.parseColor("#DEDFC4")
     private val imgResIDs = setOf(
         R.drawable.bishop_black,
         R.drawable.bishop_white,
@@ -113,15 +113,37 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     }
 
     private fun drawChessboard(canvas: Canvas) {
+
         for (row in 0..7) {
             for (col in 0..7) {
+
+
                 drawSquareAt(canvas, col, row, (col + row) % 2 == 1)
+
             }
         }
     }
 
     private fun drawSquareAt(canvas: Canvas, col: Int, row: Int, isDark: Boolean) {
+        var isThere = false
+        if (chessDelegate?.SwitchOn() == true){
+            for(mov in chessDelegate?.getLegalMoves()!!){
+                if (mov.x -1 == col && mov.y -1 == row){
+                    isThere = true
+                    break
+                }
+            }
+        }
+
+        if (isThere){
+            lightColor = Color.parseColor("#FFFF2D")
+            darkColor = Color.parseColor("#FFFF2D")
+        }
         paint.color = if (isDark) darkColor else lightColor
         canvas.drawRect(originX + col * cellSide, originY + row * cellSide, originX + (col + 1)* cellSide, originY + (row + 1) * cellSide, paint)
+        if (isThere){
+            lightColor = Color.parseColor("#2D942D")
+            darkColor = Color.parseColor("#DEDFC4")
+        }
     }
 }

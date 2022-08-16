@@ -3,7 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../layout/custom_preview.xml" value="0.1984375" />
         <entry key="..\:/Users/Fernando/AndroidStudioProjects/Chess/app/src/main/res/layout/activity_main.xml" value="0.11018237082066869" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.165" />
       </map>
     </option>
   </component>

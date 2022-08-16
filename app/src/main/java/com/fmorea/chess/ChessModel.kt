@@ -1,8 +1,8 @@
 package com.fmorea.chess
-import android.util.Log
 
 class ChessModel {
-    private var gameLogic = GameLogic();
+    var gameLogic = GameLogic();
+    var switchOn = false
 
     init {
         reset()
