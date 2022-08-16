@@ -290,13 +290,14 @@ public class GameLogic {
                 ((y0 == y) && (x0 == x)) ||  // se la casella di partenza è uguale a quella di destinazione
                 (toccaAlBianco() && isNero(y0, x0)) || // se vuoi muovere un pezzo di colore diverso
                 (toccaAlNero() && isBianco(y0, x0))  || // rispetto al colore del turno corrente
+                (getColorePezzo(y,x) == getColorePezzo(y0,x0)) || // se vuoi muovere un pezzo su un altro pezzo dello stesso colore
                 // condizioni per scartare subito un mucchio di caselle
                 (getTipoPezzo(y0,x0) == 'p' && !(x == x0 || x == x0+1 || x == x0-1 || y > y0+2 || y<y0-2)) ||
                 (getTipoPezzo(y0,x0) == 'r' && !(x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1)) ||
                 (getTipoPezzo(y0,x0) == 't' && !(x == x0 || y == y0) ||
-                (getTipoPezzo(y0,x0) == 'a' && !((x0 + y0) % 2 == (x + y) % 2)) ||
-                (getTipoPezzo(y0,x0) == 'a' && (y == y0 || x == x0)) ||
-                (getTipoPezzo(y0,x0) == 'c' && (x > x0 + 3 || x < x0 - 3 || y > y0 + 3 || y < y0 - 3)) )
+                        (getTipoPezzo(y0,x0) == 'a' && !((x0 + y0) % 2 == (x + y) % 2)) ||
+                        (getTipoPezzo(y0,x0) == 'a' && (y == y0 || x == x0)) ||
+                        (getTipoPezzo(y0,x0) == 'c' && (x > x0 + 3 || x < x0 - 3 || y > y0 + 3 || y < y0 - 3)) )
         ) {
             return false;
         }
@@ -467,22 +468,16 @@ public class GameLogic {
                 ArrayList<Movement> positions = validMoves();
                 boolean isACheckedPosition = false;
                 for (Movement mov : positions){
-                    if (mov.getX() == x && mov.getY() == y){
+                    if (mov.getX() == x && mov.getY() == y) {
                         isACheckedPosition = true;
+                        break;
                     }
                 }
                 jumpTurn();
                 setPezzo(y0,x0,backupRe);
 
                 // Occorre verificare se il re si vuole muovere "nelle vicinanze"
-                if(     (y == y0 + 1 && x == x0 + 0) ||
-                        (y == y0 + 0 && x == x0 + 1) ||
-                        (y == y0 - 1 && x == x0 + 0) ||
-                        (y == y0 + 0 && x == x0 - 1) ||
-                        (y == y0 + 1 && x == x0 + 1) ||
-                        (y == y0 - 1 && x == x0 + 1) ||
-                        (y == y0 + 1 && x == x0 - 1) ||
-                        (y == y0 - 1 && x == x0 - 1) ){
+                if(x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1){
                     if(((isNotRe(y, x) && getColorePezzo(y, x) != getColorePezzo(y0, x0)) || isEmpty(y, x))
                             &&
                             !isACheckedPosition){
@@ -497,8 +492,7 @@ public class GameLogic {
     }
 
     public ArrayList<Movement> validMoves(){
-        long startTime = System.currentTimeMillis();
-        Movement toTest = null;
+        Movement toTest;
         ArrayList legalMoves= new ArrayList<>();
 
         for (int i=1; i<=8;i++){
@@ -516,8 +510,6 @@ public class GameLogic {
                 }
             }
         }
-        long totalTime = startTime - System.currentTimeMillis();
-        System.out.println(totalTime);
         return legalMoves;
     }
 
@@ -530,16 +522,8 @@ public class GameLogic {
     }
 
     public boolean isInsideChessBoard(int w,int e) {
-        if (    w <= 0 || w > 8 ||
-                e <= 0 || e > 8 ) {
-            return false;
-        } else return true;
-    }
-
-    public boolean isInsideChessBoard(int w,int e, int r) {
         return w > 0 && w <= 8 &&
-                e > 0 && e <= 8 &&
-                r > 0 && r <= 8;
+                e > 0 && e <= 8;
     }
 
     public boolean isInsideChessBoard(int w,int e, int r, int t) {
