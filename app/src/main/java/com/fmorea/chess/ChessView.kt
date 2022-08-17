@@ -69,6 +69,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                     movingPiece = it
                     movingPieceBitmap = bitmaps[it.resID]
                 }
+                invalidate()
             }
             MotionEvent.ACTION_MOVE -> {
                 isMoving = true
@@ -77,6 +78,9 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                 invalidate()
             }
             MotionEvent.ACTION_UP -> {
+                movingPieceX = 999f
+                movingPieceY = 999f
+                isMoving = false
                 val col = ((event.x - originX) / cellSide).toInt()+1
                 val row = 7 - ((event.y - originY) / cellSide).toInt()+1
                 if(col in 1..8 && row in 1..8) {
@@ -92,9 +96,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                     movingPiece = null
                     movingPieceBitmap = null
                 }
-                isMoving = false
                 invalidate()
-
             }
         }
         return true
@@ -104,7 +106,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
         for (row in 1..8) {
             for (col in 1..8) {
                 chessDelegate?.pieceAt(col, row)?.let {
-                    if ((!isMoving && it == movingPiece) || it != movingPiece) {
+                    if ((!isMoving && it == movingPiece) || (it != movingPiece)) {
                         drawPieceAt(canvas, col, row , it.resID)
                     }
                 }
@@ -118,8 +120,10 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
     private fun drawPieceAt(canvas: Canvas, col: Int, row: Int, resID: Int) {
         val bitmap = bitmaps[resID]!!
-        canvas.drawBitmap(bitmap, null, RectF(originX + (col - 1) * cellSide,originY + (7 - (row-1)) * cellSide,originX + ((col-1) + 1) * cellSide,originY + ((7 - (row-1)) + 1) * cellSide), paint)
-    }
+        if(row in 1..8 && col in 1..8){
+            canvas.drawBitmap(bitmap, null, RectF(originX + (col - 1) * cellSide,originY + (7 - (row-1)) * cellSide,originX + ((col-1) + 1) * cellSide,originY + ((7 - (row-1)) + 1) * cellSide), paint)
+            }
+        }
 
     private fun loadBitmaps() {
         imgResIDs.forEach {
