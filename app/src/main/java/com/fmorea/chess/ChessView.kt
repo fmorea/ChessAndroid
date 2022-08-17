@@ -9,8 +9,8 @@ import kotlin.math.min
 
 class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
     private val scaleFactor = 1.0f
-    private var originX = 20f
-    private var originY = 20f
+    private var originX = 0f
+    private var originY = 0f
     private var cellSide = 130f
     private var lightColor = Color.parseColor("#2D942D")
     private var darkColor = Color.parseColor("#DEDFC4")
@@ -48,9 +48,9 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
         canvas ?: return
 
         val chessBoardSide = min(width, height) * scaleFactor
-        cellSide = chessBoardSide / 8f
-        originX = (width - chessBoardSide) / 2f
-        originY = (height - chessBoardSide) / 2f
+        cellSide = chessBoardSide / 9f
+        originX = (width - chessBoardSide) / 2f + (1f/18f)*chessBoardSide
+        originY = (height - chessBoardSide) / 5f
 
         drawChessboard(canvas)
         drawPieces(canvas)
@@ -61,8 +61,8 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                fromCol = ((event.x - originX) / cellSide).toInt()
-                fromRow = 7 - ((event.y - originY) / cellSide).toInt()
+                fromCol = ((event.x - originX) / cellSide).toInt()+1
+                fromRow = 7 - ((event.y - originY) / cellSide).toInt()+1
 
                 chessDelegate?.pieceAt(fromCol, fromRow)?.let {
                     movingPiece = it
@@ -75,8 +75,8 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                 invalidate()
             }
             MotionEvent.ACTION_UP -> {
-                val col = ((event.x - originX) / cellSide).toInt()
-                val row = 7 - ((event.y - originY) / cellSide).toInt()
+                val col = ((event.x - originX) / cellSide).toInt()+1
+                val row = 7 - ((event.y - originY) / cellSide).toInt()+1
                 chessDelegate?.movePiece(fromCol, fromRow, col, row)
                 movingPiece = null
                 movingPieceBitmap = null
@@ -86,11 +86,11 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     }
 
     private fun drawPieces(canvas: Canvas) {
-        for (row in 0..7) {
-            for (col in 0..7) {
+        for (row in 1..8) {
+            for (col in 1..8) {
                 chessDelegate?.pieceAt(col, row)?.let {
                     if (it != movingPiece) {
-                        drawPieceAt(canvas, col, row, it.resID)
+                        drawPieceAt(canvas, col, row , it.resID)
                     }
                 }
             }
@@ -103,7 +103,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
     private fun drawPieceAt(canvas: Canvas, col: Int, row: Int, resID: Int) {
         val bitmap = bitmaps[resID]!!
-        canvas.drawBitmap(bitmap, null, RectF(originX + col * cellSide,originY + (7 - row) * cellSide,originX + (col + 1) * cellSide,originY + ((7 - row) + 1) * cellSide), paint)
+        canvas.drawBitmap(bitmap, null, RectF(originX + (col - 1) * cellSide,originY + (7 - (row-1)) * cellSide,originX + ((col-1) + 1) * cellSide,originY + ((7 - (row-1)) + 1) * cellSide), paint)
     }
 
     private fun loadBitmaps() {
@@ -114,12 +114,9 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
     private fun drawChessboard(canvas: Canvas) {
 
-        for (row in 0..7) {
-            for (col in 0..7) {
-
-
-                drawSquareAt(canvas, col, row, (col + row) % 2 == 1)
-
+        for (row in 1..8) {
+            for (col in 1..8) {
+                drawSquareAt(canvas, col, row, (col + row) % 2 == 0)
             }
         }
     }
@@ -128,7 +125,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
         var isThere = false
         if (chessDelegate?.SwitchOn() == true){
             for(mov in chessDelegate?.getLegalMoves()!!){
-                if (mov.x -1 == col && mov.y -1 == 7 - row){
+                if (mov.x == col && mov.y  == row){
                     isThere = true
                     break
                 }
@@ -140,7 +137,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
             darkColor = Color.parseColor("#CCCC00")
         }
         paint.color = if (isDark) darkColor else lightColor
-        canvas.drawRect(originX + col * cellSide, originY + row * cellSide, originX + (col + 1)* cellSide, originY + (row + 1) * cellSide, paint)
+        canvas.drawRect(originX + (col-1) * cellSide, originY + ((9-row)-1) * cellSide, originX + col* cellSide, originY + (9-row) * cellSide, paint)
         if (isThere){
             lightColor = Color.parseColor("#2D942D")
             darkColor = Color.parseColor("#DEDFC4")

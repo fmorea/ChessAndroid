@@ -10,7 +10,7 @@ class ChessModel {
     }
 
     fun movePiece(fromCol: Int, fromRow: Int, toCol: Int, toRow: Int) : Boolean {
-        return gameLogic.move(fromRow+1,fromCol+1,toRow+1,toCol+1)
+        return gameLogic.move(fromRow,fromCol,toRow,toCol)
     }
 
     private fun reset() {
@@ -18,9 +18,9 @@ class ChessModel {
     }
 
     fun pieceAt(col: Int, row: Int) : ChessPiece? {
-        if (gameLogic.getPezzo(row+1,col+1) == null) return null;
-        if(gameLogic.getColorePezzo(row+1,col+1) == 'B'){
-            when (gameLogic.getTipoPezzo(row+1,col+1)) {
+        if (gameLogic.getPezzo(row,col) == null) return null;
+        if(gameLogic.getColorePezzo(row,col) == 'B'){
+            when (gameLogic.getTipoPezzo(row,col)) {
                 'p' -> return ChessPiece(col,row,ChessPlayer.WHITE,ChessRank.PAWN,R.drawable.pawn_white)
                 'a' -> return ChessPiece(col,row,ChessPlayer.WHITE,ChessRank.BISHOP,R.drawable.bishop_white)
                 'c' -> return ChessPiece(col,row,ChessPlayer.WHITE,ChessRank.KNIGHT,R.drawable.knight_white)
@@ -29,8 +29,8 @@ class ChessModel {
                 't' -> return ChessPiece(col,row,ChessPlayer.WHITE,ChessRank.ROOK,R.drawable.rook_white)
             }
         }
-        else if(gameLogic.getColorePezzo(row+1,col+1) == 'N'){
-            when (gameLogic.getTipoPezzo(row+1,col+1)) {
+        else if(gameLogic.getColorePezzo(row,col) == 'N'){
+            when (gameLogic.getTipoPezzo(row,col)) {
                 'p' -> return ChessPiece(col,row,ChessPlayer.BLACK,ChessRank.PAWN,R.drawable.pawn_black)
                 'a' -> return ChessPiece(col,row,ChessPlayer.BLACK,ChessRank.BISHOP,R.drawable.bishop_black)
                 'c' -> return ChessPiece(col,row,ChessPlayer.BLACK,ChessRank.KNIGHT,R.drawable.knight_black)
