@@ -77,9 +77,12 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
             MotionEvent.ACTION_UP -> {
                 val col = ((event.x - originX) / cellSide).toInt()+1
                 val row = 7 - ((event.y - originY) / cellSide).toInt()+1
-                chessDelegate?.movePiece(fromCol, fromRow, col, row)
+                if(col in 1..8 && row in 1..8) {
+                    chessDelegate?.movePiece(fromCol, fromRow, col, row)
+                }
                 movingPiece = null
                 movingPieceBitmap = null
+                invalidate()
             }
         }
         return true
@@ -133,8 +136,8 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
         }
 
         if (isThere){
-            lightColor = Color.parseColor("#FFFF2D")
-            darkColor = Color.parseColor("#CCCC00")
+            darkColor = Color.parseColor("#FFFF2D")
+            lightColor = Color.parseColor("#CCCC00")
         }
         paint.color = if (isDark) darkColor else lightColor
         canvas.drawRect(originX + (col-1) * cellSide, originY + ((9-row)-1) * cellSide, originX + col* cellSide, originY + (9-row) * cellSide, paint)
