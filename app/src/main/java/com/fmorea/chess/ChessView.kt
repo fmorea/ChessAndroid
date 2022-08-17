@@ -128,7 +128,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
         var isThere = false
         if (chessDelegate?.SwitchOn() == true){
             for(mov in chessDelegate?.getLegalMoves()!!){
-                if (mov.x -1 == col && mov.y -1 == row){
+                if (mov.x -1 == col && mov.y -1 == 7 - row){
                     isThere = true
                     break
                 }
@@ -137,7 +137,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
         if (isThere){
             lightColor = Color.parseColor("#FFFF2D")
-            darkColor = Color.parseColor("#FFFF2D")
+            darkColor = Color.parseColor("#CCCC00")
         }
         paint.color = if (isDark) darkColor else lightColor
         canvas.drawRect(originX + col * cellSide, originY + row * cellSide, originX + (col + 1)* cellSide, originY + (row + 1) * cellSide, paint)

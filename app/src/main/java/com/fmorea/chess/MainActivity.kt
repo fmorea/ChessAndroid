@@ -16,9 +16,11 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
         setContentView(R.layout.activity_main)
 
         findViewById<ChessView>(R.id.chess_view).chessDelegate = this
-        switch1?.setOnCheckedChangeListener({ _ , isChecked ->
-            chessModel.switchOn = true;
-        })
+        switch1?.setOnCheckedChangeListener { _, isChecked ->
+            chessModel.switchOn = isChecked
+            findViewById<ChessView>(R.id.chess_view).invalidate()
+        }
+
     }
 
     override fun pieceAt(col: Int, row: Int): ChessPiece? {
