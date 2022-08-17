@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_main.*
 import android.util.Log
+import android.widget.Toast
 
 const val TAG = "MainActivity"
 
@@ -19,6 +20,12 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
         switch1?.setOnCheckedChangeListener { _, isChecked ->
             chessModel.switchOn = isChecked
             findViewById<ChessView>(R.id.chess_view).invalidate()
+        }
+        textView2.setOnClickListener {
+            val toast = Toast
+                .makeText(applicationContext,
+                    chessModel.gameLogic.validMoves().toString(),
+                    Toast.LENGTH_LONG).show()
         }
 
     }

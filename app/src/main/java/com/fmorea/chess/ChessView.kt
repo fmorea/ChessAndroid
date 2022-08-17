@@ -8,7 +8,7 @@ import android.view.View
 import kotlin.math.min
 
 class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
-    private val scaleFactor = 1.0f
+    private val scaleFactor = 1.09f
     private var originX = 0f
     private var originY = 0f
     private var cellSide = 130f
@@ -37,6 +37,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     private var fromRow: Int = -1
     private var movingPieceX = -1f
     private var movingPieceY = -1f
+    var isMoving = false
 
     var chessDelegate: ChessDelegate? = null
 
@@ -70,6 +71,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                 }
             }
             MotionEvent.ACTION_MOVE -> {
+                isMoving = true
                 movingPieceX = event.x
                 movingPieceY = event.y
                 invalidate()
@@ -80,9 +82,19 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                 if(col in 1..8 && row in 1..8) {
                     chessDelegate?.movePiece(fromCol, fromRow, col, row)
                 }
-                movingPiece = null
-                movingPieceBitmap = null
+                if(col == fromCol && row == fromRow){
+                    chessDelegate?.pieceAt(fromCol, fromRow)?.let {
+                        movingPiece = it
+                        movingPieceBitmap = bitmaps[it.resID]
+                    }
+                }
+                else {
+                    movingPiece = null
+                    movingPieceBitmap = null
+                }
+                isMoving = false
                 invalidate()
+
             }
         }
         return true
@@ -92,7 +104,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
         for (row in 1..8) {
             for (col in 1..8) {
                 chessDelegate?.pieceAt(col, row)?.let {
-                    if (it != movingPiece) {
+                    if ((!isMoving && it == movingPiece) || it != movingPiece) {
                         drawPieceAt(canvas, col, row , it.resID)
                     }
                 }
@@ -125,23 +137,36 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     }
 
     private fun drawSquareAt(canvas: Canvas, col: Int, row: Int, isDark: Boolean) {
-        var isThere = false
+        var isReachable = false
+        var isReachableFromTheMovingPiece = false
+
+        for(mov in chessDelegate?.getLegalMoves()!!){
+            if (movingPiece?.col == mov.x0 && movingPiece?.row == mov.y0 && col == mov.x && row == mov.y){
+                isReachableFromTheMovingPiece = true
+                break
+            }
+        }
+
         if (chessDelegate?.SwitchOn() == true){
             for(mov in chessDelegate?.getLegalMoves()!!){
                 if (mov.x == col && mov.y  == row){
-                    isThere = true
+                    isReachable = true
                     break
                 }
             }
         }
 
-        if (isThere){
+        if (isReachable){
             darkColor = Color.parseColor("#FFFF2D")
             lightColor = Color.parseColor("#CCCC00")
         }
+        if(isReachableFromTheMovingPiece){
+            darkColor = Color.parseColor("#E68A00")
+            lightColor = Color.parseColor("#FFB84D")
+        }
         paint.color = if (isDark) darkColor else lightColor
         canvas.drawRect(originX + (col-1) * cellSide, originY + ((9-row)-1) * cellSide, originX + col* cellSide, originY + (9-row) * cellSide, paint)
-        if (isThere){
+        if (isReachable || isReachableFromTheMovingPiece){
             lightColor = Color.parseColor("#2D942D")
             darkColor = Color.parseColor("#DEDFC4")
         }
