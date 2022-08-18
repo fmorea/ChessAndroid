@@ -33,10 +33,12 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
     private var movingPieceBitmap: Bitmap? = null
     private var movingPiece: ChessPiece? = null
-    private var fromCol: Int = -1
-    private var fromRow: Int = -1
-    private var movingPieceX = -1f
-    private var movingPieceY = -1f
+    private var fromCol: Int = 9999
+    private var fromRow: Int = 9999
+    private var fromColOld: Int = 9999
+    private var fromRowOld: Int = 9999
+    private var movingPieceX = 9999f
+    private var movingPieceY = 9999f
     var isMoving = false
 
     var chessDelegate: ChessDelegate? = null
@@ -62,6 +64,8 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                fromColOld=fromCol
+                fromRowOld=fromRow
                 fromCol = ((event.x - originX) / cellSide).toInt()+1
                 fromRow = 7 - ((event.y - originY) / cellSide).toInt()+1
 
@@ -78,8 +82,8 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                 invalidate()
             }
             MotionEvent.ACTION_UP -> {
-                movingPieceX = 999f
-                movingPieceY = 999f
+                movingPieceX = 99999f
+                movingPieceY = 99999f
                 isMoving = false
                 val col = ((event.x - originX) / cellSide).toInt()+1
                 val row = 7 - ((event.y - originY) / cellSide).toInt()+1
@@ -91,11 +95,15 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                         movingPiece = it
                         movingPieceBitmap = bitmaps[it.resID]
                     }
+                    if(fromColOld!=9999 && fromRowOld!=9999){
+                        chessDelegate?.movePiece(fromColOld, fromRowOld, fromCol, fromRow)
+                    }
                 }
                 else {
                     movingPiece = null
                     movingPieceBitmap = null
                 }
+
                 invalidate()
             }
         }

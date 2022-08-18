@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
             textView.text = "Black moves"
         }
         if (!hasMoved){
-            textView2.text="Please scroll the piece on the correct square (orange)"
+            textView2.text="Invalid Move"
         }
         else{
             textView2.text=""
