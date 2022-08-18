@@ -152,10 +152,63 @@ public class GameLogic {
     public void forceMove(int y0, int x0, int y, int x) {
         // hack promozione del pedone
         if(y0 == 7 && y == 8 && getTipoPezzo(y0,x0) == 'p'){
-            if(toccaAlBianco()){
-                this.setPezzo(y0,x0,promotionB);
+            this.setPezzo(y0,x0,promotionB);
+        }
+        if(y0 == 2 && y == 1 && getTipoPezzo(y0,x0) == 'p'){
+            this.setPezzo(y0,x0,promotionN);
+        }
+
+        // hack arrocco
+        if(y0 == 1 && x0 == 5 && getColorePezzo(y0,x0)=='B' && y==1 && x==7){
+            if(getPezzo(1,5)=="re_B" && getPezzo(1,6)==null && getPezzo(1,7)==null && getPezzo(1,8)=="torB"){
+                setPezzo(1,5,null);
+                setPezzo(1,8,null);
+                setPezzo(1,6,"to_B");
+                setPezzo(1,7,"re_B");
+                return;
             }
-            else this.setPezzo(y0,x0,promotionN);
+        }
+
+        if(y0 == 1 && x0 == 5 && getColorePezzo(y0,x0)=='B' && y==1 && x==3){
+            if(getPezzo(1,5)=="re_B" && getPezzo(1,4)==null && getPezzo(1,3)==null && getPezzo(1,2)==null && getPezzo(1,1)=="torB"){
+                setPezzo(1,5,null);
+                setPezzo(1,1,null);
+                setPezzo(1,4,"to_B");
+                setPezzo(1,3,"re_B");
+                return;
+            }
+        }
+
+        if(y0 == 8 && x0 == 5 && getColorePezzo(y0,x0)=='N' && y==8 && x==7){
+            if(getPezzo(8,5)=="re_N" && getPezzo(8,6)==null && getPezzo(8,7)==null && getPezzo(8,8)=="torN"){
+                setPezzo(8,5,null);
+                setPezzo(8,8,null);
+                setPezzo(8,6,"to_N");
+                setPezzo(8,7,"re_N");
+                return;
+            }
+        }
+
+        if(y0 == 8 && x0 == 5 && getColorePezzo(y0,x0)=='N' && y==8 && x==3){
+            if(getPezzo(8,5)=="re_N" && getPezzo(8,4)==null && getPezzo(8,3)==null && getPezzo(8,2)==null && getPezzo(8,1)=="torN"){
+                setPezzo(8,5,null);
+                setPezzo(8,1,null);
+                setPezzo(8,4,"to_N");
+                setPezzo(8,3,"re_N");
+                return;
+            }
+        }
+
+        // meccanismo di segnalazione per l'arrocco
+        if(getTipoPezzo(y0,x0) == 't'){
+            String torre = getPezzo(y0, x0);
+            torre = torre.replace('r', '_');
+            setPezzo(y0, x0, torre);
+        }
+        if(getTipoPezzo(y0,x0) == 'r'){
+            String re = getPezzo(y0, x0);
+            re = re.replace('e', '_');
+            setPezzo(y0, x0, re);
         }
 
         // hack en passant
@@ -312,7 +365,12 @@ public class GameLogic {
                 (getColorePezzo(y,x) == getColorePezzo(y0,x0)) || // se vuoi muovere un pezzo su un altro pezzo dello stesso colore
                 // condizioni per scartare subito un mucchio di caselle
                 (getTipoPezzo(y0,x0) == 'p' && !((x == x0 || x == x0+1 || x == x0-1 ) && (y == y0 + 1 || y == y0 -1 || (y0 == 2 && y ==4) || (y0 == 7 && y==5)))) ||
-                (getTipoPezzo(y0,x0) == 'r' && !(x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1)) ||
+                (getTipoPezzo(y0,x0) == 'r' && !((x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1) ||
+                        //fix arrocco
+                        (y0==1 && y==1 && x0==5 && x==7) ||
+                        (y0==1 && y==1 && x0==5 && x==3) ||
+                        (y0==8 && y==8 && x0==5 && x==7) ||
+                        (y0==8 && y==8 && x0==5 && x==3))) ||
                 (getTipoPezzo(y0,x0) == 't' && !(x == x0 || y == y0) ||
                         (getTipoPezzo(y0,x0) == 'a' && !((x0 + y0) % 2 == (x + y) % 2)) ||
                         (getTipoPezzo(y0,x0) == 'a' && (y == y0 || x == x0)) ||
@@ -474,6 +532,31 @@ public class GameLogic {
                             &&
                             !isACheckedPosition){
                         isLegalMove = true;
+                        break;
+                    }
+                }
+                if(y0 == 1 && x0 == 5 && getColorePezzo(y0,x0)=='B' && y==1 && x==7){
+                    if(getPezzo(1,5)=="re_B" && getPezzo(1,6)==null && getPezzo(1,7)==null && getPezzo(1,8)=="torB"){
+                        isLegalMove = true;
+                        break;
+                    }
+                }
+                if(y0 == 1 && x0 == 5 && getColorePezzo(y0,x0)=='B' && y==1 && x==3){
+                    if(getPezzo(1,5)=="re_B" && getPezzo(1,4)==null && getPezzo(1,3)==null && getPezzo(1,2)==null && getPezzo(1,1)=="torB"){
+                        isLegalMove = true;
+                        break;
+                    }
+                }
+                if(y0 == 8 && x0 == 5 && getColorePezzo(y0,x0)=='N' && y==8 && x==7){
+                    if(getPezzo(8,5)=="re_N" && getPezzo(8,6)==null && getPezzo(8,7)==null && getPezzo(8,8)=="torN"){
+                        isLegalMove = true;
+                        break;
+                    }
+                }
+                if(y0 == 8 && x0 == 5 && getColorePezzo(y0,x0)=='N' && y==8 && x==3){
+                    if(getPezzo(8,5)=="re_N" && getPezzo(8,4)==null && getPezzo(8,3)==null && getPezzo(8,2)==null && getPezzo(8,1)=="torN"){
+                        isLegalMove = true;
+                        break;
                     }
                 }
                 break;
