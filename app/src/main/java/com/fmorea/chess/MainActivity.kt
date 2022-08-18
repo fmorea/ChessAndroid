@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
         textView2.setOnClickListener {
             val toast = Toast
                 .makeText(applicationContext,
-                    chessModel.gameLogic.validMoves().toString(),
+                    chessModel.gameLogic.legalMoves().toString(),
                     Toast.LENGTH_LONG).show()
         }
 
