@@ -3,7 +3,6 @@ package com.fmorea.chess
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_main.*
-import android.util.Log
 import android.widget.Toast
 
 const val TAG = "MainActivity"
@@ -43,10 +42,17 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
             textView.text = "Black moves"
         }
         if (!hasMoved){
-            textView2.text="Illegal Move"
+            textView2.text="Please scroll the piece on the correct square (orange)"
         }
         else{
             textView2.text=""
+        }
+        if(chessModel.gameLogic.legalMoves.isEmpty()) {
+            if (chessModel.gameLogic.toccaAlBianco()) {
+                textView2.text = "Ha vinto il nero"
+            } else {
+                textView2.text = "Ha vinto il bianco"
+            }
         }
         findViewById<ChessView>(R.id.chess_view).invalidate()
     }

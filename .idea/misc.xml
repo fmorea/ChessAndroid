@@ -5,7 +5,13 @@
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.1984375" />
         <entry key="..\:/Users/Fernando/AndroidStudioProjects/Chess/app/src/main/res/layout/activity_main.xml" value="0.11018237082066869" />
-        <entry key="app/src/main/res/layout/activity_main.xml" value="0.22194061279296878" />
+        <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.174725341796875" />
+        <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.246" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.1324200913242009" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.226" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher2.xml" value="0.226" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher2_round.xml" value="0.226" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.226" />
       </map>
     </option>
   </component>
