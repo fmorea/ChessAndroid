@@ -3,6 +3,7 @@ package com.fmorea.chess
 class ChessModel {
     var gameLogic = GameLogic();
     var switchOn = false
+    var blackPointOfView = false
 
     init {
         reset()
