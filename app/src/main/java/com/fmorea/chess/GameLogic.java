@@ -63,6 +63,7 @@ public class GameLogic {
         this.setPezzo(8, 6, "alfN");
         this.setPezzo(8, 4, "donN");
         this.setPezzo(8, 5, "re_N");
+
         this.toccaAlBianco = true;
         updateLegalMoves();
     }
@@ -312,11 +313,31 @@ public class GameLogic {
 
     public boolean isInCheck(){
         Boolean isInCheck = false;
-        // Si tolga il re dalla scacchiera
+        String backupAltroRe = null;
+        int xAltroRe = -1;
+        int yAltroRe = -1;
         for(int x=1; x<=8; x++){
             for(int y=1; y<=8; y++){
                 if(getTipoPezzo(y,x) == 'r'){
                     if((getColorePezzo(y,x)=='B' && toccaAlBianco()) || (getColorePezzo(y,x)=='N' && toccaAlNero())){
+                        // Assumendo che ci sia un altro re di colore opposto devo poter
+                        // rimuovere l'altro re, altrimenti dare scacco sarebbe una
+                        // risposta valida allo scacco
+                        for(int x1=1; x1<=8; x1++){
+                            for(int y1=1; y1<=8; y1++) {
+                                if(getTipoPezzo(y1,x1) == 'r' && getPezzo(y,x) != getPezzo(y1,x1)) {
+                                    backupAltroRe = getPezzo(y1,x1);
+                                    yAltroRe=y1;
+                                    xAltroRe=x1;
+                                    break;
+                                }
+                            }
+                        }
+                        String backupRe = getPezzo(y,x);
+                        setPezzo(y,x,null);
+                        if (backupAltroRe!=null){
+                            setPezzo(yAltroRe,xAltroRe,null);
+                        }
                         // si passi alla vista dell'altro giocatore
                         jumpTurn();
                         ArrayList<Movement> positions = pseudoLegalMoves();
@@ -330,6 +351,11 @@ public class GameLogic {
                                 }
                                 break;
                             }
+                        }
+                        //restore
+                        setPezzo(y,x,backupRe);
+                        if (backupAltroRe!=null){
+                            setPezzo(yAltroRe,xAltroRe,backupAltroRe);
                         }
                     }
                 }
@@ -511,9 +537,7 @@ public class GameLogic {
 
                 // Occorre verificare se il re si vuole muovere "nelle vicinanze"
                 if(x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1){
-                    if(((getColorePezzo(y, x) != getColorePezzo(y0, x0)) || isEmpty(y, x))
-                            &&
-                            !isACheckedPosition){
+                    if(isEmpty(y, x) && !isACheckedPosition){
                         isLegalMove = true;
                         break;
                     }
