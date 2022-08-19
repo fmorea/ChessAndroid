@@ -106,18 +106,18 @@
 
     <ScrollView
         android:id="@+id/scrollView"
-        android:layout_width="347dp"
-        android:layout_height="93dp"
+        android:layout_width="155dp"
+        android:layout_height="102dp"
         android:layout_weight="1"
         android:fillViewport="true"
         android:scrollbarStyle="outsideOverlay"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.34"
+        app:layout_constraintHorizontal_bias="0.032"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.907"
+        app:layout_constraintVertical_bias="0.911"
         tools:ignore="SpeakableTextPresentCheck">
 
         <TextView
@@ -126,7 +126,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="serif"
             android:maxLength="1000000"
-            android:text="Welcome tester, Thank to you!!!"
+            android:text="@string/welcome_tester_thank_to_you"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="20sp"
             android:textStyle="bold|italic"
@@ -140,6 +140,19 @@
             tools:ignore="MissingConstraints" />
 
     </ScrollView>
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reset"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.773"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.857"
+        tools:ignore="MissingConstraints" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

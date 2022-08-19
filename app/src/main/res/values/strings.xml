@@ -4,5 +4,6 @@
     <string name="white_moves">White moves</string>
     <string name="show_reachable_squares">Reachable squares</string>
     <string name="view_as_black">Rotate 180°</string>
-    <string name="click_here_n_for_testing_purpose_only">[DEBUG] Click Here to RESTART</string>
+    <string name="click_here_n_for_testing_purpose_only">Move a white piece to start</string>
+    <string name="welcome_tester_thank_to_you">MOVE LOG</string>
 </resources>

@@ -110,7 +110,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                         movingPiece = it
                         movingPieceBitmap = bitmaps[it.resID]
                     }
-                    if(fromColOld!=9999 && fromRowOld!=9999){
+                    if(fromColOld!=9999 && fromRowOld!=9999 && fromRowOld>=1 && fromRowOld<=8 && fromColOld>=1 && fromColOld<=8 &&  fromRow>=1 && fromRow<=8 && fromCol>=1 && fromCol<=8){
                         chessDelegate?.movePiece(fromColOld, fromRowOld, fromCol, fromRow)
                     }
                 }

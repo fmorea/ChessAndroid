@@ -32,18 +32,19 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
             chessModel.autoRotate = !chessModel.autoRotate
             findViewById<ChessView>(R.id.chess_view).invalidate()
         }
-        textView2.setOnClickListener {
+        button.setOnClickListener {
             for (i in 1..8) {
                 for (j in 1..8) {
                     chessModel.gameLogic.setPezzo(i, j, null)
                 }
             }
             chessModel.gameLogic.createStandardChessboard();
+            textView3.text="MOVE LOG";
             findViewById<ChessView>(R.id.chess_view).invalidate()
             val toast = Toast
                 .makeText(applicationContext,
                     "Game Restared",
-                    Toast.LENGTH_LONG).show()
+                    Toast.LENGTH_SHORT).show()
         }
 
     }
@@ -64,7 +65,7 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
             textView2.text="Invalid Move"
         }
         else{
-            textView2.text="[DEBUG] Click here == RESET GAME"
+            textView2.text="Move a piece"
             if(chessModel.gameLogic.toccaAlBianco()){
                 textView3.append("\nBLACK: ");
             }
