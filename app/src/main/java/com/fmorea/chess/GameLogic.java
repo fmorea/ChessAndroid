@@ -63,6 +63,7 @@ public class GameLogic {
         this.setPezzo(8, 6, "alfN");
         this.setPezzo(8, 4, "donN");
         this.setPezzo(8, 5, "re_N");
+        this.toccaAlBianco = true;
         updateLegalMoves();
     }
 
@@ -143,7 +144,7 @@ public class GameLogic {
                 toccaAlBianco = !toccaAlBianco;
             }
             updateLegalMoves();
-            print();
+            //print();
             return true;
         }
         else return false;
@@ -311,40 +312,22 @@ public class GameLogic {
 
     public boolean isInCheck(){
         Boolean isInCheck = false;
-        String backupAltroRe = null;
-        int xAltroRe = -1;
-        int yAltroRe = -1;
+        // Si tolga il re dalla scacchiera
         for(int x=1; x<=8; x++){
             for(int y=1; y<=8; y++){
                 if(getTipoPezzo(y,x) == 'r'){
-                    if((getColorePezzo(y,x)=='B' && toccaAlBianco()) ||
-                            (getColorePezzo(y,x)=='N' && toccaAlNero())){
-                        for(int x1=1; x1<=8; x1++){
-                            for(int y1=1; y1<=8; y1++) {
-                                if(getTipoPezzo(y1,x1) == 'r' && getPezzo(y,x) != getPezzo(y1,x1)) {
-                                    backupAltroRe = getPezzo(y1,x1);
-                                    yAltroRe=y1;
-                                    xAltroRe=x1;
-                                    break;
-                                }
-                            }
-                        }
+                    if((getColorePezzo(y,x)=='B' && toccaAlBianco()) || (getColorePezzo(y,x)=='N' && toccaAlNero())){
+                        // si passi alla vista dell'altro giocatore
+                        jumpTurn();
+                        ArrayList<Movement> positions = pseudoLegalMoves();
+                        jumpTurn();
 
-                        String backupRe = getPezzo(y,x);
-                        setPezzo(y,x,null);
-                        if (backupAltroRe!=null){
-                            setPezzo(yAltroRe,xAltroRe,null);
-                        }
-                        jumpTurn();
-                        ArrayList<Movement> positions = legalMoves();
-                        jumpTurn();
-                        setPezzo(y,x,backupRe);
-                        if (backupAltroRe!=null){
-                            setPezzo(yAltroRe,xAltroRe,backupAltroRe);
-                        }
                         for (Movement mov : positions){
                             if (mov.getX() == x && mov.getY() == y){
-                                isInCheck = true;
+                                // fix pedina che andando avanti crede di poter mettere in scacco il re
+                                if(!(getTipoPezzo(mov.getY0(),mov.getX0()) == 'p' && x==mov.getX() && mov.getX()==mov.getX0())) {
+                                    isInCheck = true;
+                                }
                                 break;
                             }
                         }
@@ -515,7 +498,7 @@ public class GameLogic {
                 setPezzo(y0,x0,null);
                 jumpTurn();
 
-                ArrayList<Movement> positions = legalMoves();
+                ArrayList<Movement> positions = pseudoLegalMoves();
                 boolean isACheckedPosition = false;
                 for (Movement mov : positions){
                     if (mov.getX() == x && mov.getY() == y) {
@@ -528,7 +511,7 @@ public class GameLogic {
 
                 // Occorre verificare se il re si vuole muovere "nelle vicinanze"
                 if(x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1){
-                    if(((isNotRe(y, x) && getColorePezzo(y, x) != getColorePezzo(y0, x0)) || isEmpty(y, x))
+                    if(((getColorePezzo(y, x) != getColorePezzo(y0, x0)) || isEmpty(y, x))
                             &&
                             !isACheckedPosition){
                         isLegalMove = true;

@@ -2,5 +2,7 @@
     <string name="app_name">Chess</string>
     <string name="my_button_text" />
     <string name="white_moves">White moves</string>
-    <string name="show_reachable_squares">Show reachable squares</string>
+    <string name="show_reachable_squares">Reachable squares</string>
+    <string name="view_as_black">Rotate 180°</string>
+    <string name="click_here_n_for_testing_purpose_only">[DEBUG] Click Here to RESTART</string>
 </resources>

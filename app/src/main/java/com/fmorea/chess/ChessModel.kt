@@ -2,8 +2,11 @@ package com.fmorea.chess
 
 class ChessModel {
     var gameLogic = GameLogic();
-    var switchOn = false
+    var showReachableSquares = false
     var blackPointOfView = false
+    var autoRotate = false
+
+    var chessDelegate: ChessDelegate? = null
 
     init {
         reset()
@@ -11,7 +14,11 @@ class ChessModel {
     }
 
     fun movePiece(fromCol: Int, fromRow: Int, toCol: Int, toRow: Int) : Boolean {
-        return gameLogic.move(fromRow,fromCol,toRow,toCol)
+        var hasMoved = gameLogic.move(fromRow,fromCol,toRow,toCol)
+        if(hasMoved && chessDelegate?.autoRotate() == true){
+            chessDelegate?.setOrientation(!chessDelegate?.blackPointOfView()!!)
+        }
+        return hasMoved
     }
 
     private fun reset() {

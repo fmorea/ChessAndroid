@@ -5,6 +5,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlin.math.min
 
 class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
@@ -66,8 +67,14 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
             MotionEvent.ACTION_DOWN -> {
                 fromColOld=fromCol
                 fromRowOld=fromRow
-                fromCol = ((event.x - originX) / cellSide).toInt()+1
-                fromRow = 7 - ((event.y - originY) / cellSide).toInt()+1
+                if(chessDelegate?.blackPointOfView() == true){
+                    fromCol = 9 -(((event.x - originX) / cellSide).toInt() + 1)
+                    fromRow = 9 - (7 - ((event.y - originY) / cellSide).toInt() + 1)
+                }
+                else {
+                    fromCol = ((event.x - originX) / cellSide).toInt() + 1
+                    fromRow = 7 - ((event.y - originY) / cellSide).toInt() + 1
+                }
 
                 chessDelegate?.pieceAt(fromCol, fromRow)?.let {
                     movingPiece = it
@@ -85,8 +92,16 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                 movingPieceX = 99999f
                 movingPieceY = 99999f
                 isMoving = false
-                val col = ((event.x - originX) / cellSide).toInt()+1
-                val row = 7 - ((event.y - originY) / cellSide).toInt()+1
+                var col = -1
+                var row = -1
+                if(chessDelegate?.blackPointOfView() == true){
+                    col = 9 - (((event.x - originX) / cellSide).toInt()+1)
+                    row = 9 - (7 - ((event.y - originY) / cellSide).toInt()+1)
+                }
+                else {
+                    col = ((event.x - originX) / cellSide).toInt()+1
+                    row = 7 - ((event.y - originY) / cellSide).toInt()+1
+                }
                 if(col in 1..8 && row in 1..8) {
                     chessDelegate?.movePiece(fromCol, fromRow, col, row)
                 }
@@ -103,7 +118,6 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
                     movingPiece = null
                     movingPieceBitmap = null
                 }
-
                 invalidate()
             }
         }
@@ -129,7 +143,12 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     private fun drawPieceAt(canvas: Canvas, col: Int, row: Int, resID: Int) {
         val bitmap = bitmaps[resID]!!
         if(row in 1..8 && col in 1..8){
-            canvas.drawBitmap(bitmap, null, RectF(originX + (col - 1) * cellSide,originY + (7 - (row-1)) * cellSide,originX + ((col-1) + 1) * cellSide,originY + ((7 - (row-1)) + 1) * cellSide), paint)
+                if(chessDelegate?.blackPointOfView() == true){
+                    canvas.drawBitmap(bitmap, null, RectF(originX + ((9-col) - 1) * cellSide,originY + (7 - ((9-row)-1)) * cellSide,originX + (((9-col)-1) + 1) * cellSide,originY + ((7 - ((9-row)-1)) + 1) * cellSide), paint)
+                }
+                 else {
+                    canvas.drawBitmap(bitmap, null, RectF(originX + (col - 1) * cellSide,originY + (7 - (row-1)) * cellSide,originX + ((col-1) + 1) * cellSide,originY + ((7 - (row-1)) + 1) * cellSide), paint)
+                }
             }
         }
 
@@ -143,7 +162,13 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
 
         for (row in 1..8) {
             for (col in 1..8) {
-                drawSquareAt(canvas, col, row, (col + row) % 2 == 0)
+                if(chessDelegate?.blackPointOfView() == true){
+                    drawSquareAt(canvas, 9-col, 9-row, (col + row) % 2 == 1)
+                }
+                else{
+                    drawSquareAt(canvas, col, row, (col + row) % 2 == 1)
+                }
+
             }
         }
     }
@@ -152,35 +177,55 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
         var isReachable = false
         var isReachableFromTheMovingPiece = false
 
-        for(mov in chessDelegate?.getLegalMoves()!!){
-            if (movingPiece?.col == mov.x0 && movingPiece?.row == mov.y0 && col == mov.x && row == mov.y){
-                isReachableFromTheMovingPiece = true
-                break
-            }
-        }
-
-        if (chessDelegate?.SwitchOn() == true){
-            for(mov in chessDelegate?.getLegalMoves()!!){
-                if (mov.x == col && mov.y  == row){
-                    isReachable = true
+        if(chessDelegate?.getLegalMoves()!=null) {
+            for (mov in chessDelegate?.getLegalMoves()!!) {
+                if (movingPiece?.col == mov.x0 && movingPiece?.row == mov.y0 && col == mov.x && row == mov.y) {
+                    isReachableFromTheMovingPiece = true
                     break
+                }
+            }
+
+
+            if (chessDelegate?.showAllReachableSquares() == true) {
+                for (mov in chessDelegate?.getLegalMoves()!!) {
+                    if (mov.x == col && mov.y == row) {
+                        isReachable = true
+                        break
+                    }
                 }
             }
         }
 
-        if (isReachable){
-            darkColor = Color.parseColor("#FFFF2D")
-            lightColor = Color.parseColor("#CCCC00")
-        }
-        if(isReachableFromTheMovingPiece){
-            darkColor = Color.parseColor("#E68A00")
-            lightColor = Color.parseColor("#FFB84D")
-        }
-        paint.color = if (isDark) darkColor else lightColor
-        canvas.drawRect(originX + (col-1) * cellSide, originY + ((9-row)-1) * cellSide, originX + col* cellSide, originY + (9-row) * cellSide, paint)
-        if (isReachable || isReachableFromTheMovingPiece){
-            lightColor = Color.parseColor("#2D942D")
-            darkColor = Color.parseColor("#DEDFC4")
-        }
+            if (isReachable) {
+                darkColor = Color.parseColor("#FFFF2D")
+                lightColor = Color.parseColor("#CCCC00")
+            }
+            if (isReachableFromTheMovingPiece) {
+                lightColor = Color.parseColor("#E68A00")
+                darkColor = Color.parseColor("#FFB84D")
+            }
+            paint.color = if (isDark) darkColor else lightColor
+            if (chessDelegate?.blackPointOfView()==true) {
+                canvas.drawRect(
+                    originX + ((9 - col) - 1) * cellSide,
+                    originY + ((row) - 1) * cellSide,
+                    originX + (9 - col) * cellSide,
+                    originY + (row) * cellSide,
+                    paint
+                )
+            } else if (chessDelegate?.blackPointOfView()==false)  {
+                canvas.drawRect(
+                    originX + (col - 1) * cellSide,
+                    originY + ((9 - row) - 1) * cellSide,
+                    originX + col * cellSide,
+                    originY + (9 - row) * cellSide,
+                    paint
+                )
+            }
+            if (isReachable || isReachableFromTheMovingPiece) {
+                lightColor = Color.parseColor("#2D942D")
+                darkColor = Color.parseColor("#DEDFC4")
+            }
+
     }
 }
