@@ -27,7 +27,7 @@ public class GameLogic {
         this.matrix = new String[8][8];
     }
 
-    public void createStandardChessboard() {
+    public void createStandardChessboard() {/*
         this.setPezzo(2, 1, "pedB");
         this.setPezzo(2, 2, "pedB");
         this.setPezzo(2, 3, "pedB");
@@ -62,7 +62,14 @@ public class GameLogic {
         this.setPezzo(8, 3, "alfN");
         this.setPezzo(8, 6, "alfN");
         this.setPezzo(8, 4, "donN");
-        this.setPezzo(8, 5, "re_N");
+        this.setPezzo(8, 5, "re_N");*/
+
+        this.setPezzo(2,4,"r__B");
+        this.setPezzo(3,1,"p__B");
+        this.setPezzo(4,2,"cavB");
+        this.setPezzo(5,1,"alfN");
+        this.setPezzo(6,4,"donN");
+        this.setPezzo(8,5,"r__N");
 
         this.toccaAlBianco = true;
         updateLegalMoves();
@@ -537,7 +544,7 @@ public class GameLogic {
 
                 // Occorre verificare se il re si vuole muovere "nelle vicinanze"
                 if(x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1){
-                    if(isEmpty(y, x) && !isACheckedPosition){
+                    if(isEmpty(y, x) || ((isBianco(y0,x0) && isNero(y,x)) || (isBianco(y,x) && isNero(y0,x0))) && !isACheckedPosition){
                         isLegalMove = true;
                         break;
                     }
