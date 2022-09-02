@@ -5,5 +5,12 @@
     <string name="show_reachable_squares">Reachable squares</string>
     <string name="view_as_black">Rotate 180°</string>
     <string name="click_here_n_for_testing_purpose_only">Move a white piece to start</string>
-    <string name="welcome_tester_thank_to_you">MOVE LOG</string>
+    <string name="welcome_tester_thank_to_you">MOVE HISTORY</string>
+    <string name="action_settings">About this app</string>
+    <string name="textview">This application is licensed under GNU GPL v3 license, you can modify and redistribute as you want.\n
+    \n\n\n\nThanks to the beta testers:\n
+    Luigi Gesualdo,\n
+    Andrea Ronga,\n
+    Fabrizio De Marco
+    </string>
 </resources>

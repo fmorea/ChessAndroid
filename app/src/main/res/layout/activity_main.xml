@@ -15,6 +15,7 @@
   ~ limitations under the License.
   -->
 
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -22,6 +23,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     tools:ignore="ExtraText">
+
 
     <com.fmorea.chess.ChessView
         android:id="@+id/chess_view"
@@ -34,38 +36,6 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints"
         tools:visibility="visible" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="365dp"
-        android:layout_height="58dp"
-        android:layout_marginTop="670dp"
-        android:fontFamily="serif"
-        android:text="@string/click_here_n_for_testing_purpose_only"
-        android:textSize="20sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.296"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/chess_view"
-        app:layout_constraintVertical_bias="0.892"
-        tools:ignore="MissingConstraints" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="127dp"
-        android:layout_height="71dp"
-        android:layout_marginTop="12dp"
-        android:fontFamily="serif"
-        android:text="@string/white_moves"
-        android:textSize="30sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.03"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/chess_view"
-        tools:ignore="MissingConstraints" />
 
     <Switch
         android:id="@+id/switch1"
@@ -106,18 +76,22 @@
 
     <ScrollView
         android:id="@+id/scrollView"
-        android:layout_width="155dp"
-        android:layout_height="102dp"
+        android:layout_width="358dp"
+        android:layout_height="164dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="660dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="100dp"
         android:layout_weight="1"
         android:fillViewport="true"
-        android:scrollbarStyle="outsideOverlay"
+        android:scrollbarStyle="insideInset"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.032"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.911"
+        app:layout_constraintVertical_bias="0.773"
         tools:ignore="SpeakableTextPresentCheck">
 
         <TextView
@@ -143,16 +117,58 @@
 
     <Button
         android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="94dp"
+        android:layout_height="39dp"
         android:text="Reset"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.773"
+        app:layout_constraintHorizontal_bias="0.124"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.857"
+        app:layout_constraintVertical_bias="0.042"
         tools:ignore="MissingConstraints" />
+
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottomAppBar"
+        app:menu="@menu/bottomappbar_menu"
+        style="@style/Widget.MaterialComponents.BottomAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom"
+        app:fabAlignmentMode="center"
+        app:fabCradleMargin="5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        android:gravity="center"
+        tools:layout_gravity="center_vertical"
+        android:orientation="vertical"
+        tools:context=".MainActivity"
+        tools:ignore="BottomAppBar,MissingConstraints">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent">
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="serif"
+                android:gravity="center|end"
+                android:text="@string/click_here_n_for_testing_purpose_only"
+                android:textSize="20sp"
+                android:textStyle="bold|italic"
+                tools:ignore="MissingConstraints" />
+
+        </RelativeLayout>
+
+
+    </com.google.android.material.bottomappbar.BottomAppBar>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,9 +1,16 @@
 package com.fmorea.chess
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.util.AttributeSet
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.ScrollView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.fmorea.chess.databinding.ActivityMainBinding
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -15,10 +22,12 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        supportActionBar?.hide()
+        var binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         findViewById<ChessView>(R.id.chess_view).chessDelegate = this
-        chessModel.chessDelegate=this
+        chessModel.chessDelegate = this
 
         switch1?.setOnCheckedChangeListener { _, isChecked ->
             chessModel.showReachableSquares = isChecked
@@ -39,15 +48,37 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                 }
             }
             chessModel.gameLogic.createStandardChessboard();
-            textView3.text="MOVE LOG";
+            textView3.text = "MOVE LOG";
             findViewById<ChessView>(R.id.chess_view).invalidate()
             val toast = Toast
-                .makeText(applicationContext,
+                .makeText(
+                    applicationContext,
                     "Game Restared",
-                    Toast.LENGTH_SHORT).show()
+                    Toast.LENGTH_SHORT
+                ).show()
         }
 
+
+
+        binding.bottomAppBar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.action_settings -> {
+                    val intent = Intent(this, About::class.java)
+                    startActivity(intent)
+                    true
+                }
+                else -> false
+            }
+
+        }
     }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.bottomappbar_menu, menu)
+        return true
+    }
+
 
     override fun pieceAt(col: Int, row: Int): ChessPiece? {
         return chessModel.pieceAt(col, row)
@@ -56,16 +87,16 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
     override fun movePiece(fromCol: Int, fromRow: Int, toCol: Int, toRow: Int) : Boolean?{
         var hasMoved = chessModel.movePiece(fromCol, fromRow, toCol, toRow)
         if(chessModel.gameLogic.toccaAlBianco()){
-            textView.text = "White moves"
+            textView2.text = "White moves"
         }
         else{
-            textView.text = "Black moves"
+            textView2.text = "Black moves"
         }
         if (!hasMoved){
-            textView2.text="Invalid Move"
+            textView2.append(" - Invalid Move");
         }
         else{
-            textView2.text="Move a piece"
+            textView2.append(" - Move a piece");
             if(chessModel.gameLogic.toccaAlBianco()){
                 textView3.append("\nBLACK: ");
             }

@@ -7,7 +7,12 @@
         <entry key="..\:/Users/Fernando/AndroidStudioProjects/Chess/app/src/main/res/layout/activity_main.xml" value="0.11018237082066869" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.174725341796875" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.246" />
-        <entry key="app/src/main/res/layout/activity_main.xml" value="0.13407287597656253" />
+        <entry key="app/src/main/res/layout/activity_about.xml" value="0.19629364013671877" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.1701268742791234" />
+        <entry key="app/src/main/res/layout/layout.xml" value="0.12222222222222222" />
+        <entry key="app/src/main/res/layout/popup_window.xml" value="0.12606837606837606" />
+        <entry key="app/src/main/res/menu/bottomappbar_menu.xml" value="0.1252136752136752" />
+        <entry key="app/src/main/res/menu/overflow_menu.xml" value="0.13376068376068376" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.226" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher2.xml" value="0.226" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher2_round.xml" value="0.226" />

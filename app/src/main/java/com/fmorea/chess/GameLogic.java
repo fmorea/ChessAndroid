@@ -380,7 +380,7 @@ public class GameLogic {
                         (y0==1 && y==1 && x0==5 && x==3) ||
                         (y0==8 && y==8 && x0==5 && x==7) ||
                         (y0==8 && y==8 && x0==5 && x==3))) ||
-                        (getTipoPezzo(y0,x0) == 't' && !(x == x0 || y == y0) ||
+                (getTipoPezzo(y0,x0) == 't' && !(x == x0 || y == y0) ||
                         (getTipoPezzo(y0,x0) == 'a' && !((x0 + y0) % 2 == (x + y) % 2)) ||
                         (getTipoPezzo(y0,x0) == 'a' && (y == y0 || x == x0)) ||
                         (getTipoPezzo(y0,x0) == 'c' && (x > x0 + 3 || x < x0 - 3 || y > y0 + 3 || y < y0 - 3)) )
@@ -391,35 +391,37 @@ public class GameLogic {
         boolean isLegalMove = false;
         switch (getTipoPezzo(y0, x0)) {
             case 'p': // pedina
+                String[][] backupMatrix = copy(matrix);
                 isLegalMove = pawnLogic(y0,x0,y,x);
+                matrix = copy(backupMatrix);
                 break;
             case 't':
                 int distance, minimum;
                 boolean thereIsAPieceInTheMiddle = false;
-                    if (y0 == y) {
-                        distance = Math.max(x0, x) - Math.min(x0, x);
-                        // se c'è un pezzo in mezzo la mossa è illegale
-                        minimum = Math.min(x0, x);
-                        for (int i = 1; i < distance; i++) {
-                            if (!isEmpty(y, minimum + i)) {
-                                thereIsAPieceInTheMiddle = true;
-                                break;
-                            }
+                if (y0 == y) {
+                    distance = Math.max(x0, x) - Math.min(x0, x);
+                    // se c'è un pezzo in mezzo la mossa è illegale
+                    minimum = Math.min(x0, x);
+                    for (int i = 1; i < distance; i++) {
+                        if (!isEmpty(y, minimum + i)) {
+                            thereIsAPieceInTheMiddle = true;
+                            break;
                         }
-                        isLegalMove = !thereIsAPieceInTheMiddle;
                     }
-                    if (x0 == x) {
-                        distance = Math.max(y0, y) - Math.min(y0, y);//2
-                        // se c'è un pezzo in mezzo la mossa è illegale
-                        minimum = Math.min(y0, y);//5
-                        for (int i = 1; i < distance; i++) {
-                            if (!isEmpty(minimum + i, x)) {
-                                thereIsAPieceInTheMiddle = true;
-                                break;
-                            }
+                    isLegalMove = !thereIsAPieceInTheMiddle;
+                }
+                if (x0 == x) {
+                    distance = Math.max(y0, y) - Math.min(y0, y);//2
+                    // se c'è un pezzo in mezzo la mossa è illegale
+                    minimum = Math.min(y0, y);//5
+                    for (int i = 1; i < distance; i++) {
+                        if (!isEmpty(minimum + i, x)) {
+                            thereIsAPieceInTheMiddle = true;
+                            break;
                         }
-                        isLegalMove = !thereIsAPieceInTheMiddle;
                     }
+                    isLegalMove = !thereIsAPieceInTheMiddle;
+                }
                 break;
             case 'a':
                 int m = 999;
@@ -510,7 +512,7 @@ public class GameLogic {
                         (y == y0 - 1 && x == x0 + 2) ||
                         (y == y0 + 2 && x == x0 - 1) ||
                         (y == y0 + 1 && x == x0 - 2) ){
-                        isLegalMove = true;
+                    isLegalMove = true;
                 }
                 break;
             case 'r':
@@ -520,8 +522,8 @@ public class GameLogic {
 
                 // Occorre verificare se il re si vuole muovere "nelle vicinanze"
                 if(x<=x0+1 && y<=y0+1 && x>=x0-1 && y>=y0-1){
-                        isLegalMove = true;
-                        break;
+                    isLegalMove = true;
+                    break;
                 }
                 if(y0 == 1 && x0 == 5 && getColorePezzo(y0,x0)=='B' && y==1 && x==7){
                     if(getPezzo(1,5)=="re_B" && getPezzo(1,6)==null && getPezzo(1,7)==null && getPezzo(1,8)=="torB"){
@@ -652,10 +654,9 @@ public class GameLogic {
         return copy;
     }
 
-    /**
-     * Funzione non pura, ha side-effect sulla matrice
-     */
+    /** Funzione non pura, ha side-effects sulla matrice**/
     private Boolean pawnLogic(int y0,int x0, int y, int x){
+        boolean toReturn = false;
         // En passant fix
         if (isEmpty(y, x)) {
             if (isBianco(y + 1, x) && y + 1 == 4 && y0 == 4 &&
@@ -678,15 +679,13 @@ public class GameLogic {
         // Standard pawn logic
         if (isBianco(y0, x0)) {
             if ((y0 == 2 && y == 4) || (y == y0 + 1 && isInsideChessBoard(y0 + 1))) {
-
-                return legalPawnMove(y0, x0, y, x);
+                toReturn = legalPawnMove(y0, x0, y, x);
             }
         } else if (isNero(y0, x0)) {
             if ((y0 == 7 && y == 5) || (y == y0 - 1 && isInsideChessBoard(y0 - 1))) {
-                return legalPawnMove(y0, x0, y, x);
+                toReturn = legalPawnMove(y0, x0, y, x);
             }
         }
-        return false;
+        return toReturn;
     }
 }
-
