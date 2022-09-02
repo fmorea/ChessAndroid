@@ -14,14 +14,17 @@ import java.util.Arrays;
  * le rimanenti 2 lettere centrali del nome possono essere utilizzate come meta-dati in casi particolari
  */
 public class GameLogic {
-    private String[][] matrix;
-    private boolean toccaAlBianco = true;
-    private boolean lockTurn = false;
+    // Gli attributi privati rappresentano lo stato della partita
+    private String[][] matrix; //rappresentazione della scacchiera
+    private boolean toccaAlBianco = true; //rappresentazione del turno corrente
+    private boolean lockTurn = false; //flag booleano per far rimanere il turno al giocatore corrente
+    private String promotionB="donB"; //auto promozione a donna per il giocatore bianco
+    private String promotionN="donN"; //auto promozione a donna per il giocatore nero
+    private ArrayList<Movement> legalMoves; //lista di mosse legali nella situazione corrente
+    private ArrayList<Movement> pseudoLegalMoves; //lista di mosse pseudo legali (scacco non considerato) nella posizione corrente
+    private ArrayList<String[][]> history=null;
+    private String[][] lastUndo = null;
 
-    private String promotionB="donB";
-    private String promotionN="donN";
-    private ArrayList<Movement> legalMoves;
-    private ArrayList<Movement> pseudoLegalMoves;
 
     public GameLogic() {
         this.matrix = new String[8][8];
@@ -65,7 +68,8 @@ public class GameLogic {
         this.setPezzo(8, 5, "re_N");
 
         this.toccaAlBianco = true;
-        updateLegalMoves();
+        updateLegalMoves(); // too slow on startup !!!
+        history = new ArrayList<>();
     }
 
     public void setPezzo(int y, int x, String pezzo) {
@@ -140,6 +144,8 @@ public class GameLogic {
         Movement toCheck = new Movement();
         toCheck.set(y0,x0,y,x);
         if (getLegalMoves().contains(toCheck)) {
+            String[][] backup = copy(matrix);
+            history.add(backup);
             forceMove(y0, x0, y, x);
             if (!lockTurn) {
                 toccaAlBianco = !toccaAlBianco;
@@ -687,5 +693,25 @@ public class GameLogic {
             }
         }
         return toReturn;
+    }
+
+    public void undo(){
+        if(!history.isEmpty()) {
+            lastUndo = copy(matrix);
+            matrix = copy(history.get(history.size() - 1));
+            history.remove(history.size()-1);
+            toccaAlBianco = !toccaAlBianco;
+            updateLegalMoves();
+        }
+    }
+
+    public void redo(){
+        if (lastUndo!=null){
+            history.add(history.size(),copy(matrix));
+            matrix=copy(lastUndo);
+            toccaAlBianco=!toccaAlBianco;
+            lastUndo=null;
+            updateLegalMoves();
+        }
     }
 }

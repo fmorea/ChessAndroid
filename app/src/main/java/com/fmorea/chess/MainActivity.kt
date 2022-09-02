@@ -1,12 +1,8 @@
 package com.fmorea.chess
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.AttributeSet
 import android.view.Menu
-import android.view.MenuItem
-import android.view.View
 import android.widget.ScrollView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -48,7 +44,7 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                 }
             }
             chessModel.gameLogic.createStandardChessboard();
-            textView3.text = "MOVE LOG";
+            textView3.text = "MOVE HISTORY";
             findViewById<ChessView>(R.id.chess_view).invalidate()
             val toast = Toast
                 .makeText(
@@ -65,6 +61,24 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                 R.id.action_settings -> {
                     val intent = Intent(this, About::class.java)
                     startActivity(intent)
+                    true
+                }
+                R.id.action_undo ->{
+                    chessModel.gameLogic.undo()
+                    findViewById<ChessView>(R.id.chess_view).invalidate()
+                    updateTextViews(true)
+                    val toast = Toast
+                        .makeText(
+                            applicationContext,
+                            "Undo done",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    true
+                }
+                R.id.action_redo ->{
+                    chessModel.gameLogic.redo()
+                    findViewById<ChessView>(R.id.chess_view).invalidate()
+                    updateTextViews(true)
                     true
                 }
                 else -> false
@@ -86,17 +100,11 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
 
     override fun movePiece(fromCol: Int, fromRow: Int, toCol: Int, toRow: Int) : Boolean?{
         var hasMoved = chessModel.movePiece(fromCol, fromRow, toCol, toRow)
-        if(chessModel.gameLogic.toccaAlBianco()){
-            textView2.text = "White moves"
-        }
-        else{
-            textView2.text = "Black moves"
-        }
+        // update textview3
         if (!hasMoved){
-            textView2.append(" - Invalid Move");
+            //
         }
         else{
-            textView2.append(" - Move a piece");
             if(chessModel.gameLogic.toccaAlBianco()){
                 textView3.append("\nBLACK: ");
             }
@@ -105,6 +113,21 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
             }
             textView3.append(getLetter(fromCol) + fromRow + " " + getLetter(toCol)+toRow);
             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
+        }
+
+        updateTextViews(hasMoved);
+        return hasMoved
+    }
+
+    private fun updateTextViews(hasMoved : Boolean){
+        if(chessModel.gameLogic.toccaAlBianco()){
+            textView2.text = "White moves"
+        }
+        else{
+            textView2.text = "Black moves"
+        }
+        if (!hasMoved){
+            textView2.append(" - Invalid Move");
         }
         if(chessModel.gameLogic.legalMoves.isEmpty()) {
             if(chessModel.gameLogic.isInCheck) {
@@ -118,7 +141,6 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                 textView2.text = "Stalemate"
             }
         }
-        return hasMoved
     }
 
     override fun showAllReachableSquares(): Boolean? {
