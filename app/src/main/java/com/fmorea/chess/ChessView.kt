@@ -33,7 +33,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
     private val paint = Paint()
 
     private var movingPieceBitmap: Bitmap? = null
-    private var movingPiece: ChessPiece? = null
+    var movingPiece: ChessPiece? = null
     private var fromCol: Int = 9999
     private var fromRow: Int = 9999
     private var fromColOld: Int = 9999

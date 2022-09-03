@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                 R.id.action_undo ->{
                     chessModel.gameLogic.undo()
                     findViewById<ChessView>(R.id.chess_view).invalidate()
+                    findViewById<ChessView>(R.id.chess_view).movingPiece=null;
                     updateTextViews(true)
                     val toast = Toast
                         .makeText(
@@ -78,6 +79,7 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                 R.id.action_redo ->{
                     chessModel.gameLogic.redo()
                     findViewById<ChessView>(R.id.chess_view).invalidate()
+                    findViewById<ChessView>(R.id.chess_view).movingPiece=null;
                     updateTextViews(true)
                     true
                 }

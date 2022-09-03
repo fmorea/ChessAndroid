@@ -222,7 +222,18 @@ public class GameLogic {
         // hack en passant
         if(getTipoPezzo(y0,x0) == 'p'){
             pawnLogic(y0,x0,y,x);
+            if(getPezzo(y,x+1)!= null && getPezzo(y,x+1).charAt(1) == '1'){
+                String pezzo = getPezzo(y, x+1);
+                pezzo = pezzo.replace('1', '_');
+                setPezzo(y, x+1, pezzo);
+            }
+            if(getPezzo(y,x-1)!= null && getPezzo(y,x-1).charAt(1) == '1'){
+                String pezzo = getPezzo(y, x-1);
+                pezzo = pezzo.replace('1', '_');
+                setPezzo(y, x-1, pezzo);
+            }
         }
+
 
         if(isInsideChessBoard(y0,x0,y,x)) {
             String temp = this.getPezzo(y0, x0);
