@@ -15,4 +15,6 @@
     </string>
     <string name="action_undo">Undo</string>
     <string name="action_redo">Redo</string>
+    <string name="privacyPolicy">Our privacy policy is simple: "Don't ask, don't tell". We don\'t ask who you are, so we can\'t tell anyone who you are.
+    We do not transmit cookies and we do not look for cookies. We do not record any kind of information.</string>
 </resources>

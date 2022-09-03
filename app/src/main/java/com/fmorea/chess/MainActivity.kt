@@ -63,6 +63,11 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                     startActivity(intent)
                     true
                 }
+                R.id.action_privacy_policy -> {
+                    val intent = Intent(this, PrivacyPolicy::class.java)
+                    startActivity(intent)
+                    true
+                }
                 R.id.action_undo ->{
                     chessModel.gameLogic.undo()
                     findViewById<ChessView>(R.id.chess_view).invalidate()
