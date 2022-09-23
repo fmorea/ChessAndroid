@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                 }
             }
             chessModel.gameLogic.createStandardChessboard();
-            textView3.text = "MOVE HISTORY";
+            textView3.text = "New Chessboard Analysis";
             findViewById<ChessView>(R.id.chess_view).invalidate()
             val toast = Toast
                 .makeText(
@@ -112,13 +112,14 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
             //
         }
         else{
-            if(chessModel.gameLogic.toccaAlBianco()){
+            /*if(chessModel.gameLogic.toccaAlBianco()){
                 textView3.append("\nBLACK: ");
             }
             else{
                 textView3.append("\nWHITE: ");
             }
-            textView3.append(getLetter(fromCol) + fromRow + " " + getLetter(toCol)+toRow);
+            textView3.append(getLetter(fromCol) + fromRow + " " + getLetter(toCol)+toRow);*/
+            textView3.append("\n"+ chessModel.gameLogic.objectiveFunction().toString());
             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
         }
 

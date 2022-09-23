@@ -9,7 +9,7 @@ public class Movement {
     private int x0;
     private int y0;
 
-    public void set(int y0, int x0, int y, int x){
+    public Movement(int y0, int x0, int y, int x){
         this.y = y;
         this.x0 = x0;
         this.x = x;

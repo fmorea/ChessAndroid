@@ -141,8 +141,7 @@ public class GameLogic {
     }
 
     public boolean move(int y0, int x0, int y, int x) {
-        Movement toCheck = new Movement();
-        toCheck.set(y0,x0,y,x);
+        Movement toCheck = new Movement(y0,x0,y,x);
         if (getLegalMoves().contains(toCheck)) {
             String[][] backup = copy(matrix);
             history.add(backup);
@@ -597,8 +596,7 @@ public class GameLogic {
                     for (int k = 1; k <= 8; k++) {
                         for (int l = 1; l <= 8; l++) {
                             if (pseudoLegalMove(i, j, k, l)) {
-                                toTest = new Movement();
-                                toTest.set(i, j, k, l);
+                                toTest = new Movement(i, j, k, l);
                                 pseudoLegalMoves.add(toTest);
                             }
                         }
@@ -724,5 +722,64 @@ public class GameLogic {
             lastUndo=null;
             updateLegalMoves();
         }
+    }
+
+    public int objectiveFunction(){
+        int acc = 0;
+        for(int x=1; x<=8; x++){
+            for(int y=1; y<=8; y++){
+                switch (getTipoPezzo(y,x)){
+                    case 'p':
+                        if(getColorePezzo(y,x)=='B'){
+                            acc = acc + 1;
+                        }
+                        else{
+                            acc = acc - 1;
+                        }
+                        break;
+                    case 'a':
+                        if(getColorePezzo(y,x)=='B'){
+                            acc = acc + 5;
+                        }
+                        else{
+                            acc = acc - 5;
+                        }
+                        break;
+                    case 'c':
+                        if(getColorePezzo(y,x)=='B'){
+                            acc = acc + 4;
+                        }
+                        else{
+                            acc = acc - 4;
+                        }
+                        break;
+                    case 't':
+                        if(getColorePezzo(y,x)=='B'){
+                            acc = acc + 6;
+                        }
+                        else{
+                            acc = acc - 6;
+                        }
+                        break;
+                    case 'd':
+                        if(getColorePezzo(y,x)=='B'){
+                            acc = acc + 10;
+                        }
+                        else{
+                            acc = acc - 10;
+                        }
+                        break;
+                    case 'r':
+                        if(getColorePezzo(y,x)=='B'){
+                            acc = acc + 1000;
+                        }
+                        else{
+                            acc = acc - 1000;
+                        }
+                        break;
+                }
+            }
+        }
+        return acc;
     }
 }
