@@ -739,34 +739,34 @@ public class GameLogic {
                         break;
                     case 'a':
                         if(getColorePezzo(y,x)=='B'){
+                            acc = acc + 3;
+                        }
+                        else{
+                            acc = acc - 3;
+                        }
+                        break;
+                    case 'c':
+                        if(getColorePezzo(y,x)=='B'){
+                            acc = acc + 3;
+                        }
+                        else{
+                            acc = acc - 3;
+                        }
+                        break;
+                    case 't':
+                        if(getColorePezzo(y,x)=='B'){
                             acc = acc + 5;
                         }
                         else{
                             acc = acc - 5;
                         }
                         break;
-                    case 'c':
-                        if(getColorePezzo(y,x)=='B'){
-                            acc = acc + 4;
-                        }
-                        else{
-                            acc = acc - 4;
-                        }
-                        break;
-                    case 't':
-                        if(getColorePezzo(y,x)=='B'){
-                            acc = acc + 6;
-                        }
-                        else{
-                            acc = acc - 6;
-                        }
-                        break;
                     case 'd':
                         if(getColorePezzo(y,x)=='B'){
-                            acc = acc + 10;
+                            acc = acc + 9;
                         }
                         else{
-                            acc = acc - 10;
+                            acc = acc - 9;
                         }
                         break;
                     case 'r':
