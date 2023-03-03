@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="101"
@@ -16,4 +17,9 @@
         android:id="@+id/action_redo"
         android:orderInCategory="99"
         android:title="@string/action_redo" />
+    <item
+        android:id="@+id/back_button"
+        android:icon="@drawable/arrow_back"
+        android:title="@string/back"
+        app:showAsAction="always"/>
 </menu>

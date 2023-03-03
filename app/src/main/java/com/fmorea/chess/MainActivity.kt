@@ -3,6 +3,7 @@ package com.fmorea.chess
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import android.widget.ScrollView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -44,14 +45,9 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                 }
             }
             chessModel.gameLogic.createStandardChessboard();
-            textView3.text = "New Chessboard Analysis";
+            textView3.text = "";
             findViewById<ChessView>(R.id.chess_view).invalidate()
-            val toast = Toast
-                .makeText(
-                    applicationContext,
-                    "Game Restared",
-                    Toast.LENGTH_SHORT
-                ).show()
+            textView2.text= "Game Restarted";
         }
 
 
@@ -73,18 +69,25 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
                     findViewById<ChessView>(R.id.chess_view).invalidate()
                     findViewById<ChessView>(R.id.chess_view).movingPiece=null;
                     updateTextViews(true)
-                    val toast = Toast
-                        .makeText(
-                            applicationContext,
-                            "Undo done",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    movePiece(0,0,0,0); //update statistics
+                    textView2.text = "Undo done"
+                    true
+                }
+                R.id.back_button ->{
+                    chessModel.gameLogic.undo()
+                    findViewById<ChessView>(R.id.chess_view).invalidate()
+                    findViewById<ChessView>(R.id.chess_view).movingPiece=null;
+                    updateTextViews(true)
+                    movePiece(0,0,0,0); //update statistics
+                    textView2.text = "Undo done"
                     true
                 }
                 R.id.action_redo ->{
                     chessModel.gameLogic.redo()
                     findViewById<ChessView>(R.id.chess_view).invalidate()
                     findViewById<ChessView>(R.id.chess_view).movingPiece=null;
+                    movePiece(0,0,0,0); //update statistics
+                    textView2.text = "Redo done";
                     updateTextViews(true)
                     true
                 }
@@ -101,25 +104,28 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
     }
 
 
+
     override fun pieceAt(col: Int, row: Int): ChessPiece? {
         return chessModel.pieceAt(col, row)
     }
 
     override fun movePiece(fromCol: Int, fromRow: Int, toCol: Int, toRow: Int) : Boolean?{
         var hasMoved = chessModel.movePiece(fromCol, fromRow, toCol, toRow)
-        // update textview3
         if (!hasMoved){
-            //
+            //nothing to print in this case
         }
         else{
-            /*if(chessModel.gameLogic.toccaAlBianco()){
-                textView3.append("\nBLACK: ");
+            var temp =  "Material Value: "+ chessModel.gameLogic.objectiveFunction().toString();
+            if (chessModel.gameLogic.isInCheck){
+                temp = temp + "\nKing is in check !!"
             }
-            else{
-                textView3.append("\nWHITE: ");
+            if (chessModel.gameLogic.toccaAlBianco()){
+                temp = temp + "\nWhite turn"
+            }else{
+                temp = temp + "\nBlack turn"
             }
-            textView3.append(getLetter(fromCol) + fromRow + " " + getLetter(toCol)+toRow);*/
-            textView3.append("\n"+ chessModel.gameLogic.objectiveFunction().toString());
+
+            textView3.text = temp;
             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
         }
 
@@ -128,15 +134,13 @@ class MainActivity : AppCompatActivity(), ChessDelegate {
     }
 
     private fun updateTextViews(hasMoved : Boolean){
-        if(chessModel.gameLogic.toccaAlBianco()){
-            textView2.text = "White moves"
-        }
-        else{
-            textView2.text = "Black moves"
-        }
+
         if (!hasMoved){
-            textView2.append(" - Invalid Move");
+            textView2.text = "Invalid Move !!!";
+        }else{
+            textView2.text = "[" + getLetter(chessModel.gameLogic.mov.x0) + chessModel.gameLogic.mov.y0 + "]" + "->" + "[" + getLetter(chessModel.gameLogic.mov.x) + chessModel.gameLogic.mov.y + "]";
         }
+
         if(chessModel.gameLogic.legalMoves.isEmpty()) {
             if(chessModel.gameLogic.isInCheck) {
                 if (chessModel.gameLogic.toccaAlBianco()) {

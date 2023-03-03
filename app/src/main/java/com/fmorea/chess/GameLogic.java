@@ -16,6 +16,8 @@ import java.util.Arrays;
 public class GameLogic {
     // Gli attributi privati rappresentano lo stato della partita
     private String[][] matrix; //rappresentazione della scacchiera
+
+    private Movement mov = new Movement(0,0,0,0);
     private boolean toccaAlBianco = true; //rappresentazione del turno corrente
     private boolean lockTurn = false; //flag booleano per far rimanere il turno al giocatore corrente
     private String promotionB="donB"; //auto promozione a donna per il giocatore bianco
@@ -141,6 +143,9 @@ public class GameLogic {
     }
 
     public boolean move(int y0, int x0, int y, int x) {
+        if(y0==0 && x0 == 0 && x == 0 && y == 0){ // epsilon-mossa, considerata sempre valida
+            return true;
+        }
         Movement toCheck = new Movement(y0,x0,y,x);
         if (getLegalMoves().contains(toCheck)) {
             String[][] backup = copy(matrix);
@@ -151,6 +156,7 @@ public class GameLogic {
             }
             updateLegalMoves();
             //print();
+            mov = toCheck;
             return true;
         }
         else return false;
@@ -612,6 +618,8 @@ public class GameLogic {
         this.legalMoves = legalMoves();
     }
 
+
+
     public boolean isInsideChessBoard(int w) {
         return w > 0 && w <= 8;
     }
@@ -781,5 +789,9 @@ public class GameLogic {
             }
         }
         return acc;
+    }
+
+    public Movement getMov() {
+        return mov;
     }
 }

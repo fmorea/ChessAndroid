@@ -4,18 +4,15 @@
     <string name="white_moves">White moves</string>
     <string name="show_reachable_squares">Reachable squares</string>
     <string name="view_as_black">Rotate 180°</string>
-    <string name="click_here_n_for_testing_purpose_only">Move a white piece to start</string>
-    <string name="welcome_tester_thank_to_you">Chessboard Analysis</string>
+    <string name="click_here_n_for_testing_purpose_only">Move a piece to start</string>
+    <string name="welcome_tester_thank_to_you"> </string>
     <string name="action_settings">About this app</string>
-    <string name="textview">This application is licensed under GNU GPL v3 license, you can modify and redistribute as you want.\n
-    \n\n\n\nThanks to the beta testers:\n
-    Luigi Gesualdo,\n
-    Andrea Ronga,\n
-    Fabrizio De Marco
+    <string name="textview">\n\nThis application is licensed under GNU GPL v3 license, you can modify and redistribute as you want.\n
     </string>
     <string name="action_undo">Undo</string>
     <string name="action_redo">Redo</string>
     <string name="privacyPolicy">We value your privacy. No data whatsoever is recorded and trasmitted by Chess app.
  Your Privacy is our main concern, the app is free and open source under GPL V3 and does not contain any ads, tracker, cokies, and other anti-privacy technologies.\n You can even check yourself the source code and recompile the app.\nOur privacy policy is simple: "Don't ask, don't tell". We don\'t ask who you are, so we can\'t tell anyone who you are.
     We do not transmit cookies and we do not look for cookies. We do not record any kind of information.</string>
+    <string name="back">Undo</string>
 </resources>
