@@ -1,5 +1,6 @@
 # ChessAndroid
 Simple chess app in kotlin with backend written in java
+[Link to Play Store Download](https://play.google.com/store/apps/details?id=com.fmorea.chess)
 
  This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
