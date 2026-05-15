@@ -5,7 +5,6 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlin.math.min
 
 class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
@@ -48,9 +47,7 @@ class ChessView(context: Context?, attrs: AttributeSet?) : View(context, attrs) 
         loadBitmaps()
     }
 
-    override fun onDraw(canvas: Canvas?) {
-        canvas ?: return
-
+    override fun onDraw(canvas: Canvas) {
         val chessBoardSide = min(width, height) * scaleFactor
         cellSide = chessBoardSide / 9f
         originX = (width - chessBoardSide) / 2f + (1f/18f)*chessBoardSide
