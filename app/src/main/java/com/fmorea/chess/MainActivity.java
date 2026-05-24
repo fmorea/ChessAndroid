@@ -2,178 +2,133 @@ package com.fmorea.chess;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.ScrollView;
-
-import androidx.annotation.NonNull;
+import android.view.View;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.fmorea.chess.databinding.ActivityMainBinding;
+import java.util.Locale;
 
-import java.util.ArrayList;
+/**
+ * MainActivity handles the UI layer of the Chess application.
+ * Following Unix philosophy: it focuses on user interaction and display.
+ * Networking roles are managed automatically by NetworkAutoManager.
+ */
+public class MainActivity extends AppCompatActivity implements ChessGameController.GameUI {
 
-public class MainActivity extends AppCompatActivity implements ChessDelegate {
-
-    private final ChessModel chessModel = new ChessModel();
     private ActivityMainBinding binding;
+    private final ChessModel model = new ChessModel();
+    private NetworkHandler transport;
+    private NetworkDiscovery discovery;
+    private ChessGameController controller;
+    private NetworkAutoManager autoManager;
+
+    private static NetworkHandler sharedTransport;
+    public static NetworkHandler getTransport() { return sharedTransport; }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.chessView.setChessDelegate(this);
-        chessModel.setChessDelegate(this);
+        if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        binding.switch1.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            chessModel.setShowReachableSquares(isChecked);
-            binding.chessView.invalidate();
+        transport = new NetworkHandler(50000);
+        sharedTransport = transport;
+        discovery = new NetworkDiscovery(50001);
+        controller = new ChessGameController(model, transport, this);
+        
+        autoManager = new NetworkAutoManager(discovery, transport, controller);
+
+        binding.chessView.setChessDelegate(controller);
+        model.setChessDelegate(controller);
+
+        setupUI();
+        autoManager.start();
+    }
+
+    private void setupUI() {
+        // Switch 1 was for hints, now enabled by default.
+        binding.switch1.setVisibility(View.GONE);
+
+        binding.switch2.setOnCheckedChangeListener((v, c) -> { if (c != model.isBlackPointOfView()) model.setBlackPointOfView(c); binding.chessView.invalidate(); });
+        binding.switch3.setOnCheckedChangeListener((v, c) -> { model.setAutoRotate(c); binding.chessView.invalidate(); });
+        
+        binding.button.setOnClickListener(v -> controller.resetGame());
+        
+        binding.btnPen.setOnClickListener(v -> {
+            boolean active = !v.isSelected();
+            v.setSelected(active);
+            binding.btnEraser.setSelected(false);
+            binding.btnEraser.setBackgroundColor(0x00000000);
+            binding.chessView.setPenMode(active);
+            v.setBackgroundColor(active ? 0x33FF0000 : 0x00000000);
         });
-        binding.switch2.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            chessModel.setBlackPointOfView(!chessModel.isBlackPointOfView());
-            binding.chessView.invalidate();
-        });
-        binding.switch3.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            chessModel.setAutoRotate(!chessModel.isAutoRotate());
-            binding.chessView.invalidate();
-        });
-        binding.button.setOnClickListener(v -> {
-            for (int i = 1; i <= 8; i++) {
-                for (int j = 1; j <= 8; j++) {
-                    chessModel.getGameLogic().setPezzo(i, j, null);
-                }
-            }
-            chessModel.getGameLogic().createStandardChessboard();
-            binding.textView3.setText("");
-            binding.chessView.invalidate();
-            binding.textView2.setText("Game Restarted");
+
+        binding.btnEraser.setOnClickListener(v -> {
+            boolean active = !v.isSelected();
+            v.setSelected(active);
+            binding.btnPen.setSelected(false);
+            binding.btnPen.setBackgroundColor(0x00000000);
+            binding.chessView.setEraserMode(active);
+            v.setBackgroundColor(active ? 0x330000FF : 0x00000000);
         });
 
         binding.bottomAppBar.setOnMenuItemClickListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.action_settings) {
-                Intent intent = new Intent(this, AboutActivity.class);
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.action_privacy_policy) {
-                Intent intent = new Intent(this, PrivacyPolicy.class);
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.action_undo || itemId == R.id.back_button) {
-                chessModel.getGameLogic().undo();
-                binding.chessView.invalidate();
-                binding.chessView.setMovingPiece(null);
-                updateTextViews(true);
-                movePiece(0, 0, 0, 0); // update statistics
-                binding.textView2.setText("Undo done");
-                return true;
-            } else if (itemId == R.id.action_redo) {
-                chessModel.getGameLogic().redo();
-                binding.chessView.invalidate();
-                binding.chessView.setMovingPiece(null);
-                movePiece(0, 0, 0, 0); // update statistics
-                binding.textView2.setText("Redo done");
-                updateTextViews(true);
-                return true;
-            }
-            return false;
+            int id = item.getItemId();
+            if (id == R.id.action_chat) startActivity(new Intent(this, ChatActivity.class));
+            else if (id == R.id.action_privacy_policy) startActivity(new Intent(this, PrivacyPolicy.class));
+            else if (id == R.id.action_undo) controller.undo();
+            else if (id == R.id.action_redo) controller.redo();
+            else return false;
+            return true;
+        });
+    }
+
+    @Override public void refreshBoard() { 
+        runOnUiThread(() -> {
+            binding.chessView.invalidate();
+            binding.switch2.setChecked(model.isBlackPointOfView());
         });
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.bottomappbar_menu, menu);
-        return true;
-    }
+    public void updateStatus(int material, boolean inCheck, boolean whiteTurn, Movement lastMove) {
+        runOnUiThread(() -> {
+            String status = String.format(Locale.getDefault(), getString(R.string.material_val), material);
+            if (inCheck) status += getString(R.string.check_label);
+            status += (whiteTurn ? getString(R.string.white_turn) : getString(R.string.black_turn));
+            binding.textView3.setText(status);
 
-    @Override
-    public ChessPiece pieceAt(int col, int row) {
-        return chessModel.pieceAt(col, row);
-    }
-
-    @Override
-    public Boolean movePiece(int fromCol, int fromRow, int toCol, int toRow) {
-        boolean hasMoved = chessModel.movePiece(fromCol, fromRow, toCol, toRow);
-        if (hasMoved) {
-            String temp = "Material Value: " + chessModel.getGameLogic().objectiveFunction();
-            if (chessModel.getGameLogic().isInCheck()) {
-                temp += "\nKing is in check !!";
-            }
-            if (chessModel.getGameLogic().toccaAlBianco()) {
-                temp += "\nWhite turn";
+            if (lastMove != null && lastMove.getX0() != 0) {
+                binding.textView2.setText(String.format(Locale.getDefault(), "[%s%d] -> [%s%d]", 
+                    getLetter(lastMove.getX0()), lastMove.getY0(), getLetter(lastMove.getX()), lastMove.getY()));
             } else {
-                temp += "\nBlack turn";
+                binding.textView2.setText(R.string.new_game);
             }
-
-            binding.textView3.setText(temp);
-            binding.scrollView.fullScroll(ScrollView.FOCUS_DOWN);
-        }
-
-        updateTextViews(hasMoved);
-        return hasMoved;
-    }
-
-    private void updateTextViews(boolean hasMoved) {
-        if (!hasMoved) {
-            binding.textView2.setText("Invalid Move !!!");
-        } else {
-            binding.textView2.setText("[" + getLetter(chessModel.getGameLogic().getMov().getX0()) + chessModel.getGameLogic().getMov().getY0() + "]" + "->" + "[" + getLetter(chessModel.getGameLogic().getMov().getX()) + chessModel.getGameLogic().getMov().getY() + "]");
-        }
-
-        if (chessModel.getGameLogic().getLegalMoves().isEmpty()) {
-            if (chessModel.getGameLogic().isInCheck()) {
-                if (chessModel.getGameLogic().toccaAlBianco()) {
-                    binding.textView2.setText("Black Won");
-                } else {
-                    binding.textView2.setText("White Won");
-                }
-            } else {
-                binding.textView2.setText("Stalemate");
-            }
-        }
+        });
     }
 
     @Override
-    public Boolean showAllReachableSquares() {
-        return chessModel.isShowReachableSquares();
-    }
+    public void onConnectionStateChanged(boolean connected) { }
 
     @Override
-    public Boolean blackPointOfView() {
-        return chessModel.isBlackPointOfView();
+    public void updateNetworkInfo(String role, String status) {
+        runOnUiThread(() -> {
+            binding.textViewNetworkRole.setText(getString(R.string.net_role_prefix, role));
+            binding.textViewNetworkStatus.setText(getString(R.string.net_status_prefix, status));
+        });
     }
+
+    @Override public void onMessage(String msg) { 
+        runOnUiThread(() -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show());
+    }
+
+    private String getLetter(int i) { return (i < 1 || i > 8) ? "" : String.valueOf((char)('a' + i - 1)); }
 
     @Override
-    public Boolean autoRotate() {
-        return chessModel.isAutoRotate();
-    }
-
-    @Override
-    public void setOrientation(boolean orientation) {
-        chessModel.setBlackPointOfView(orientation);
-    }
-
-    @Override
-    public ArrayList<Movement> getLegalMoves() {
-        return chessModel.getGameLogic().getLegalMoves();
-    }
-
-    private String getLetter(int i) {
-        return switch (i) {
-            case 1 -> "a";
-            case 2 -> "b";
-            case 3 -> "c";
-            case 4 -> "d";
-            case 5 -> "e";
-            case 6 -> "f";
-            case 7 -> "g";
-            case 8 -> "h";
-            default -> "";
-        };
+    protected void onDestroy() {
+        super.onDestroy();
+        autoManager.stop();
     }
 }

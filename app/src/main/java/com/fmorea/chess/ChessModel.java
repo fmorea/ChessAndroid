@@ -1,19 +1,21 @@
 package com.fmorea.chess;
 
+/**
+ * ChessModel maintains the game state and handles view-to-logic mapping.
+ * Following Unix philosophy: it represents the data and basic operations.
+ */
 public class ChessModel {
     private final GameLogic gameLogic = new GameLogic();
-    private boolean showReachableSquares = false;
     private boolean blackPointOfView = false;
     private boolean autoRotate = false;
-
     private ChessDelegate chessDelegate;
 
     public ChessModel() {
         reset();
-        gameLogic.print();
     }
 
     public boolean movePiece(int fromCol, int fromRow, int toCol, int toRow) {
+        // Map View coordinates to Logic coordinates (Y, X)
         boolean hasMoved = gameLogic.move(fromRow, fromCol, toRow, toCol);
         if (hasMoved && chessDelegate != null && chessDelegate.autoRotate()) {
             chessDelegate.setOrientation(!chessDelegate.blackPointOfView());
@@ -25,40 +27,30 @@ public class ChessModel {
         gameLogic.createStandardChessboard();
     }
 
-    public ChessPiece pieceAt(int col, int row) {
+    public Piece pieceAt(int col, int row) {
         if (gameLogic.getPezzo(row, col) == null) return null;
         char color = gameLogic.getColorePezzo(row, col);
         char type = gameLogic.getTipoPezzo(row, col);
 
-        if (color == 'B') {
-            switch (type) {
-                case 'p': return new ChessPiece(col, row, ChessPlayer.WHITE, ChessRank.PAWN, R.drawable.pawn_white);
-                case 'a': return new ChessPiece(col, row, ChessPlayer.WHITE, ChessRank.BISHOP, R.drawable.bishop_white);
-                case 'c': return new ChessPiece(col, row, ChessPlayer.WHITE, ChessRank.KNIGHT, R.drawable.knight_white);
-                case 'r': return new ChessPiece(col, row, ChessPlayer.WHITE, ChessRank.KING, R.drawable.king_white);
-                case 'd': return new ChessPiece(col, row, ChessPlayer.WHITE, ChessRank.QUEEN, R.drawable.queen_white);
-                case 't': return new ChessPiece(col, row, ChessPlayer.WHITE, ChessRank.ROOK, R.drawable.rook_white);
-            }
-        } else if (color == 'N') {
-            switch (type) {
-                case 'p': return new ChessPiece(col, row, ChessPlayer.BLACK, ChessRank.PAWN, R.drawable.pawn_black);
-                case 'a': return new ChessPiece(col, row, ChessPlayer.BLACK, ChessRank.BISHOP, R.drawable.bishop_black);
-                case 'c': return new ChessPiece(col, row, ChessPlayer.BLACK, ChessRank.KNIGHT, R.drawable.knight_black);
-                case 'r': return new ChessPiece(col, row, ChessPlayer.BLACK, ChessRank.KING, R.drawable.king_black);
-                case 'd': return new ChessPiece(col, row, ChessPlayer.BLACK, ChessRank.QUEEN, R.drawable.queen_black);
-                case 't': return new ChessPiece(col, row, ChessPlayer.BLACK, ChessRank.ROOK, R.drawable.rook_black);
-            }
+        Player p = (color == 'B') ? Player.WHITE : Player.BLACK;
+        int resId = 0;
+        Rank rank = Rank.PAWN;
+
+        switch (type) {
+            case 'p': rank = Rank.PAWN; resId = (p == Player.WHITE) ? R.drawable.pawn_white : R.drawable.pawn_black; break;
+            case 'a': rank = Rank.BISHOP; resId = (p == Player.WHITE) ? R.drawable.bishop_white : R.drawable.bishop_black; break;
+            case 'c': rank = Rank.KNIGHT; resId = (p == Player.WHITE) ? R.drawable.knight_white : R.drawable.knight_black; break;
+            case 'r': rank = Rank.KING; resId = (p == Player.WHITE) ? R.drawable.king_white : R.drawable.king_black; break;
+            case 'd': rank = Rank.QUEEN; resId = (p == Player.WHITE) ? R.drawable.queen_white : R.drawable.queen_black; break;
+            case 't': rank = Rank.ROOK; resId = (p == Player.WHITE) ? R.drawable.rook_white : R.drawable.rook_black; break;
         }
-        return null;
+        return new Piece(col, row, p, rank, resId);
     }
 
     public GameLogic getGameLogic() { return gameLogic; }
-    public boolean isShowReachableSquares() { return showReachableSquares; }
-    public void setShowReachableSquares(boolean showReachableSquares) { this.showReachableSquares = showReachableSquares; }
     public boolean isBlackPointOfView() { return blackPointOfView; }
-    public void setBlackPointOfView(boolean blackPointOfView) { this.blackPointOfView = blackPointOfView; }
+    public void setBlackPointOfView(boolean b) { this.blackPointOfView = b; }
     public boolean isAutoRotate() { return autoRotate; }
-    public void setAutoRotate(boolean autoRotate) { this.autoRotate = autoRotate; }
-    //public ChessDelegate getChessDelegate() { return chessDelegate; }
-    public void setChessDelegate(ChessDelegate chessDelegate) { this.chessDelegate = chessDelegate; }
+    public void setAutoRotate(boolean a) { this.autoRotate = a; }
+    public void setChessDelegate(ChessDelegate d) { this.chessDelegate = d; }
 }

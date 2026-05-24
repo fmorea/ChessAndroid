@@ -1,18 +1,42 @@
 <resources>
     <string name="app_name">Chess</string>
-    <string name="my_button_text" />
-    <string name="white_moves">White moves</string>
-    <string name="show_reachable_squares">Reachable squares</string>
-    <string name="view_as_black">Rotate 180°</string>
-    <string name="click_here_n_for_testing_purpose_only">Move a piece to start</string>
-    <string name="welcome_tester_thank_to_you"> </string>
-    <string name="action_settings">About this app</string>
-    <string name="textview">\n\nThis application is licensed under GNU GPL v3 license, you can modify and redistribute as you want.\n
-    </string>
+    <string name="reset_btn">Reset</string>
+    <string name="hints_switch">Hints</string>
+    <string name="autorotate_switch">Auto</string>
+    <string name="black_pov_switch">Black</string>
+    <string name="pen_tool_desc">Pen Tool</string>
+
+    <string name="invalid_move">Invalid Move !!!</string>
+    <string name="game_reset">Game Reset</string>
+    <string name="new_game">New Game Started</string>
+    <string name="undo_done">Undo done</string>
+    <string name="redo_done">Redo done</string>
+    <string name="peer_reset">Game reset by peer</string>
+    <string name="check_label"> | CHECK!</string>
+    <string name="white_turn"> | White turn</string>
+    <string name="black_turn"> | Black turn</string>
+    <string name="material_val">Material: %d</string>
+    <string name="win_black">Black Won</string>
+    <string name="win_white">White Won</string>
+    <string name="stalemate">Stalemate</string>
+
+    <string name="action_chat">Terminal Chat</string>
     <string name="action_undo">Undo</string>
     <string name="action_redo">Redo</string>
-    <string name="privacyPolicy">We value your privacy. No data whatsoever is recorded and trasmitted by Chess app.
- Your Privacy is our main concern, the app is free and open source under GPL V3 and does not contain any ads, tracker, cokies, and other anti-privacy technologies.\n You can even check yourself the source code and recompile the app.\nOur privacy policy is simple: "Don't ask, don't tell". We don\'t ask who you are, so we can\'t tell anyone who you are.
-    We do not transmit cookies and we do not look for cookies. We do not record any kind of information.</string>
     <string name="back">Undo</string>
+    <string name="privacyPolicy">We value your privacy. No data whatsoever is recorded and trasmitted by Chess app.</string>
+    <string name="textview">Chess App - Developed with ❤️</string>
+
+    <!-- Network Automatic Management Strings -->
+    <string name="net_role_prefix">Role: %s</string>
+    <string name="net_status_prefix">Status: %s</string>
+    <string name="net_role_searching">Searching...</string>
+    <string name="net_role_server">Server (Host)</string>
+    <string name="net_role_client">Client (Guest)</string>
+    <string name="net_status_scanning">Scanning network for peers...</string>
+    <string name="net_status_connecting">Connecting to %s...</string>
+    <string name="net_status_hosting">Waiting for opponent at %s</string>
+    <string name="net_status_connected">Connected to opponent</string>
+    <string name="net_status_disconnected">Disconnected / Retrying...</string>
+    <string name="net_status_yielding">Conflict detected, yielding to higher priority server...</string>
 </resources>

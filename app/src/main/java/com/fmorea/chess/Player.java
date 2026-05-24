@@ -1,6 +1,6 @@
 package com.fmorea.chess;
 
-public enum ChessPlayer {
+public enum Player {
     WHITE,
     BLACK
 }

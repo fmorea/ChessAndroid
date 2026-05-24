@@ -1,6 +1,6 @@
 package com.fmorea.chess;
 
-public enum ChessRank {
+public enum Rank {
     KING,
     QUEEN,
     BISHOP,
