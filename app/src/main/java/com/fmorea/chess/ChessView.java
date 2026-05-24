@@ -250,46 +250,7 @@ public class ChessView extends View {
     }
 
     private void drawInfo(Canvas canvas) {
-        if (chessDelegate == null) return;
-
-        float infoX = originX;
-        float infoY = originY + 8 * cellSide + cellSide * 0.8f;
-        float textSize = cellSide * 0.35f;
-
-        infoPaint.setTextSize(textSize);
-        
-        // Turn indicator
-        float turnCircleRadius = textSize / 2;
-        infoPaint.setColor(chessDelegate.isWhiteTurn() ? Color.WHITE : Color.BLACK);
-        infoPaint.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(infoX + turnCircleRadius, infoY - turnCircleRadius/2, turnCircleRadius, infoPaint);
-        
-        infoPaint.setColor(Color.GRAY);
-        infoPaint.setStyle(Paint.Style.STROKE);
-        infoPaint.setStrokeWidth(2f);
-        canvas.drawCircle(infoX + turnCircleRadius, infoY - turnCircleRadius/2, turnCircleRadius, infoPaint);
-
-        infoPaint.setStyle(Paint.Style.FILL);
-        infoPaint.setColor(Color.DKGRAY);
-        infoPaint.setTextAlign(Paint.Align.LEFT);
-        String turnStr = (chessDelegate.isWhiteTurn() ? "White" : "Black") + "'s Turn";
-        canvas.drawText(turnStr, infoX + turnCircleRadius * 3.0f, infoY, infoPaint);
-
-        // Material Count
-        int material = chessDelegate.getMaterialCount();
-        String matStr = "Score Advantage: " + (material > 0 ? "+" + material : material);
-        canvas.drawText(matStr, infoX, infoY + textSize * 1.5f, infoPaint);
-
-        // Connection Status
-        String netStr = "Network: " + chessDelegate.getNetworkStatus();
-        if (chessDelegate.isConnected()) {
-            infoPaint.setColor(Color.parseColor("#2E7D32")); // Material Green 800
-        } else {
-            infoPaint.setColor(Color.parseColor("#C62828")); // Material Red 800
-        }
-        canvas.drawText(netStr, infoX, infoY + textSize * 3.0f, infoPaint);
-        
-        infoPaint.setColor(Color.BLACK); // Reset
+        // Info text is now handled by MainActivity's TextViews for better localization and UX.
     }
 
     @Override

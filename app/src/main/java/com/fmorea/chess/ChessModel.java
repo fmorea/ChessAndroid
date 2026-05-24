@@ -15,12 +15,20 @@ public class ChessModel {
     }
 
     public boolean movePiece(int fromCol, int fromRow, int toCol, int toRow) {
+        return movePiece(fromCol, fromRow, toCol, toRow, null);
+    }
+
+    public boolean movePiece(int fromCol, int fromRow, int toCol, int toRow, String promotionPiece) {
         // Map View coordinates to Logic coordinates (Y, X)
-        boolean hasMoved = gameLogic.move(fromRow, fromCol, toRow, toCol);
+        boolean hasMoved = gameLogic.move(fromRow, fromCol, toRow, toCol, promotionPiece);
         if (hasMoved && chessDelegate != null && chessDelegate.autoRotate()) {
             chessDelegate.setOrientation(!chessDelegate.blackPointOfView());
         }
         return hasMoved;
+    }
+
+    public boolean isPromotionMove(int fromCol, int fromRow, int toCol, int toRow) {
+        return gameLogic.isPromotion(fromRow, fromCol, toRow, toCol);
     }
 
     public void reset() {

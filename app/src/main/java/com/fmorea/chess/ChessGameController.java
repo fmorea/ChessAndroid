@@ -15,10 +15,11 @@ public class ChessGameController implements NetworkHandler.NetworkListener, Ches
 
     public interface GameUI {
         void refreshBoard();
-        void updateStatus(int material, boolean inCheck, boolean whiteTurn, Movement lastMove);
+        void updateStatus(int material, boolean inCheck, boolean whiteTurn, Movement lastMove, int legalMovesCount);
         void onConnectionStateChanged(boolean connected);
         void updateNetworkInfo(String role, String status);
         void onMessage(String msg);
+        void showPromotionDialog(int fC, int fR, int tC, int tR, boolean isWhite);
     }
 
     public ChessGameController(ChessModel model, NetworkHandler transport, GameUI ui) {
@@ -62,13 +63,14 @@ public class ChessGameController implements NetworkHandler.NetworkListener, Ches
         notifyUI();
     }
 
-    private void notifyUI() {
+    public void notifyUI() {
         ui.refreshBoard();
         ui.updateStatus(
             model.getGameLogic().objectiveFunction(),
             model.getGameLogic().isInCheck(),
             model.getGameLogic().toccaAlBianco(),
-            model.getGameLogic().getMov()
+            model.getGameLogic().getMov(),
+            model.getGameLogic().getLegalMoves().size()
         );
     }
 
@@ -91,10 +93,10 @@ public class ChessGameController implements NetworkHandler.NetworkListener, Ches
                 notifyUI();
                 break;
             case MOVE:
-                int[] m = ChessProtocol.parseMove(raw);
+                Object[] m = ChessProtocol.parseMove(raw);
                 if (m != null) {
                     isNetworkMove = true;
-                    movePiece(m[0], m[1], m[2], m[3]);
+                    movePiece((int)m[0], (int)m[1], (int)m[2], (int)m[3], (String)m[4]);
                     isNetworkMove = false;
                 }
                 break;
@@ -132,14 +134,29 @@ public class ChessGameController implements NetworkHandler.NetworkListener, Ches
 
     @Override
     public Boolean movePiece(int fC, int fR, int tC, int tR) {
-        boolean moved = model.movePiece(fC, fR, tC, tR);
+        return movePiece(fC, fR, tC, tR, null);
+    }
+
+    @Override
+    public Boolean movePiece(int fC, int fR, int tC, int tR, String promotionPiece) {
+        if (!isNetworkMove && promotionPiece == null && isPromotionMove(fC, fR, tC, tR)) {
+            ui.showPromotionDialog(fC, fR, tC, tR, model.getGameLogic().toccaAlBianco());
+            return false;
+        }
+
+        boolean moved = model.movePiece(fC, fR, tC, tR, promotionPiece);
         if (moved) {
             if (!isNetworkMove) {
-                transport.send(ChessProtocol.formatMove(fC, fR, tC, tR));
+                transport.send(ChessProtocol.formatMove(fC, fR, tC, tR, promotionPiece));
             }
             notifyUI();
         }
         return moved;
+    }
+
+    @Override
+    public Boolean isPromotionMove(int fromCol, int fromRow, int toCol, int toRow) {
+        return model.isPromotionMove(fromCol, fromRow, toCol, toRow);
     }
 
     @Override public Boolean blackPointOfView() { return model.isBlackPointOfView(); }
@@ -151,4 +168,5 @@ public class ChessGameController implements NetworkHandler.NetworkListener, Ches
     @Override public int getMaterialCount() { return model.getGameLogic().objectiveFunction(); }
     @Override public String getNetworkStatus() { return transport.getState().toString(); }
     @Override public boolean isConnected() { return transport.isConnected(); }
+    @Override public String getStatusMessage() { return ""; }
 }

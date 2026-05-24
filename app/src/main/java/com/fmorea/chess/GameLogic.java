@@ -29,7 +29,6 @@ public class GameLogic {
     private static final int KING_VAL = 20000;
 
     // Piece-Square Tables (PST) - Values are centered for White.
-    // They represent the positional value of each square for each piece type.
     private static final int[] PAWN_PST = {
         0,  0,  0,  0,  0,  0,  0,  0,
         50, 50, 50, 50, 50, 50, 50, 50,
@@ -283,13 +282,23 @@ public class GameLogic {
         return true;
     }
 
+    public boolean isPromotion(int y0, int x0, int y, int x) {
+        String p = getPezzo(y0, x0);
+        if (p == null || p.charAt(0) != 'p') return false;
+        return (p.charAt(3) == 'B' && y == 8) || (p.charAt(3) == 'N' && y == 1);
+    }
+
     public boolean move(int y0, int x0, int y, int x) {
+        return move(y0, x0, y, x, null);
+    }
+
+    public boolean move(int y0, int x0, int y, int x, String promoPiece) {
         if (y0 == 0) return true;
         Movement m = new Movement(y0, x0, y, x);
         if (legalMoves.contains(m)) {
             history.add(copy(matrix));
             redoHistory.clear();
-            forceMove(y0, x0, y, x);
+            forceMove(y0, x0, y, x, promoPiece);
             if (!lockTurn) toccaAlBianco = !toccaAlBianco;
             updateLegalMoves();
             mov = m;
@@ -299,10 +308,14 @@ public class GameLogic {
     }
 
     public void forceMove(int y0, int x0, int y, int x) {
+        forceMove(y0, x0, y, x, null);
+    }
+
+    public void forceMove(int y0, int x0, int y, int x, String promoPiece) {
         String p = getPezzo(y0, x0);
         if (p == null) return;
-        if (y0 == 7 && y == 8 && p.charAt(0) == 'p') p = promotionB;
-        if (y0 == 2 && y == 1 && p.charAt(0) == 'p') p = promotionN;
+        if (y0 == 7 && y == 8 && p.charAt(0) == 'p') p = (promoPiece != null) ? promoPiece : promotionB;
+        if (y0 == 2 && y == 1 && p.charAt(0) == 'p') p = (promoPiece != null) ? promoPiece : promotionN;
         setPezzo(y0, x0, null);
         setPezzo(y, x, p);
     }
@@ -415,11 +428,11 @@ public class GameLogic {
     private int evalPawn(int y, int x, char color, int[] wFiles, int[] bFiles) {
         int bonus = 0;
         // Doubled pawns
-        if (color == 'B' && wFiles[x] > 1) bonus -= 15;
-        if (color == 'N' && bFiles[x] > 1) bonus -= 15;
+        if (color == 'B' && x >= 0 && x < 10 && wFiles[x] > 1) bonus -= 15;
+        if (color == 'N' && x >= 0 && x < 10 && bFiles[x] > 1) bonus -= 15;
         // Isolated pawn
-        if (color == 'B' && wFiles[x-1] == 0 && wFiles[x+1] == 0) bonus -= 20;
-        if (color == 'N' && bFiles[x-1] == 0 && bFiles[x+1] == 0) bonus -= 20;
+        if (color == 'B' && x > 0 && x < 9 && wFiles[x-1] == 0 && wFiles[x+1] == 0) bonus -= 20;
+        if (color == 'N' && x > 0 && x < 9 && bFiles[x-1] == 0 && bFiles[x+1] == 0) bonus -= 20;
         return bonus;
     }
 

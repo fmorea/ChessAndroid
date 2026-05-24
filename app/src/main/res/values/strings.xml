@@ -1,42 +1,37 @@
 <resources>
     <string name="app_name">Chess</string>
     <string name="reset_btn">Reset</string>
-    <string name="hints_switch">Hints</string>
-    <string name="autorotate_switch">Auto</string>
-    <string name="black_pov_switch">Black</string>
-    <string name="pen_tool_desc">Pen Tool</string>
+    <string name="hints_switch">Suggerimenti</string>
+    <string name="autorotate_switch">Auto-ruota</string>
+    <string name="black_pov_switch">Nero</string>
+    <string name="pen_tool_desc">Penna</string>
 
-    <string name="invalid_move">Invalid Move !!!</string>
-    <string name="game_reset">Game Reset</string>
-    <string name="new_game">New Game Started</string>
-    <string name="undo_done">Undo done</string>
-    <string name="redo_done">Redo done</string>
-    <string name="peer_reset">Game reset by peer</string>
-    <string name="check_label"> | CHECK!</string>
-    <string name="white_turn"> | White turn</string>
-    <string name="black_turn"> | Black turn</string>
-    <string name="material_val">Material: %d</string>
-    <string name="win_black">Black Won</string>
-    <string name="win_white">White Won</string>
-    <string name="stalemate">Stalemate</string>
+    <string name="invalid_move">Mossa non valida!</string>
+    <string name="game_reset">Partita resettata</string>
+    <string name="new_game">Nuova partita</string>
+    <string name="check_label"> (SCACCO!)</string>
+    <string name="white_turn">Tocca al Bianco</string>
+    <string name="black_turn">Tocca al Nero</string>
 
-    <string name="action_chat">Terminal Chat</string>
-    <string name="action_undo">Undo</string>
-    <string name="action_redo">Redo</string>
-    <string name="back">Undo</string>
-    <string name="privacyPolicy">We value your privacy. No data whatsoever is recorded and trasmitted by Chess app.</string>
-    <string name="textview">Chess App - Developed with ❤️</string>
+    <string name="status_balanced">Partita equilibrata</string>
+    <string name="status_white_slight">Lieve vantaggio Bianco</string>
+    <string name="status_white_clear">Vantaggio Bianco</string>
+    <string name="status_white_decisive">Il Bianco sta vincendo</string>
+    <string name="status_black_slight">Lieve vantaggio Nero</string>
+    <string name="status_black_clear">Vantaggio Nero</string>
+    <string name="status_black_decisive">Il Nero sta vincendo</string>
 
-    <!-- Network Automatic Management Strings -->
-    <string name="net_role_prefix">Role: %s</string>
-    <string name="net_status_prefix">Status: %s</string>
-    <string name="net_role_searching">Searching...</string>
-    <string name="net_role_server">Server (Host)</string>
-    <string name="net_role_client">Client (Guest)</string>
-    <string name="net_status_scanning">Scanning network for peers...</string>
-    <string name="net_status_connecting">Connecting to %s...</string>
-    <string name="net_status_hosting">Waiting for opponent at %s</string>
-    <string name="net_status_connected">Connected to opponent</string>
-    <string name="net_status_disconnected">Disconnected / Retrying...</string>
-    <string name="net_status_yielding">Conflict detected, yielding to higher priority server...</string>
+    <string name="status_mate_white">SCACCO MATTO! Vince il Bianco</string>
+    <string name="status_mate_black">SCACCO MATTO! Vince il Nero</string>
+    <string name="status_stalemate">PATTA (Stallo)</string>
+
+    <string name="action_chat">Chat</string>
+    <string name="action_undo">Annulla</string>
+    <string name="action_redo">Ripristina</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="textview">About Chess</string>
+
+    <!-- Network -->
+    <string name="net_role_prefix">Ruolo: %s</string>
+    <string name="net_status_prefix">Stato: %s</string>
 </resources>

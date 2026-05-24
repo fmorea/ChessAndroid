@@ -12,8 +12,12 @@ public class ChessProtocol {
         MOVE, BOARD, RESET, UNDO, REDO, CHAT, HEARTBEAT, UNKNOWN
     }
 
-    public static String formatMove(int fromCol, int fromRow, int toCol, int toRow) {
-        return String.format(Locale.ROOT, "move:%d,%d,%d,%d", fromCol, fromRow, toCol, toRow);
+    public static String formatMove(int fromCol, int fromRow, int toCol, int toRow, String promo) {
+        if (promo == null || promo.isEmpty()) {
+            return String.format(Locale.ROOT, "move:%d,%d,%d,%d", fromCol, fromRow, toCol, toRow);
+        } else {
+            return String.format(Locale.ROOT, "move:%d,%d,%d,%d,%s", fromCol, fromRow, toCol, toRow, promo);
+        }
     }
 
     public static String formatBoard(String boardData) {
@@ -48,15 +52,27 @@ public class ChessProtocol {
         return MessageType.UNKNOWN;
     }
 
-    public static int[] parseMove(String raw) {
+    public static Object[] parseMove(String raw) {
         try {
             String[] parts = raw.substring(5).split(",");
-            return new int[]{
-                Integer.parseInt(parts[0]),
-                Integer.parseInt(parts[1]),
-                Integer.parseInt(parts[2]),
-                Integer.parseInt(parts[3])
-            };
+            if (parts.length == 4) {
+                return new Object[]{
+                    Integer.parseInt(parts[0]),
+                    Integer.parseInt(parts[1]),
+                    Integer.parseInt(parts[2]),
+                    Integer.parseInt(parts[3]),
+                    null
+                };
+            } else if (parts.length == 5) {
+                return new Object[]{
+                    Integer.parseInt(parts[0]),
+                    Integer.parseInt(parts[1]),
+                    Integer.parseInt(parts[2]),
+                    Integer.parseInt(parts[3]),
+                    parts[4]
+                };
+            }
+            return null;
         } catch (Exception e) {
             return null;
         }

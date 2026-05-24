@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.fmorea.chess.databinding.ActivityMainBinding;
 import java.util.Locale;
@@ -11,7 +12,6 @@ import java.util.Locale;
 /**
  * MainActivity handles the UI layer of the Chess application.
  * Following Unix philosophy: it focuses on user interaction and display.
- * Networking roles are managed automatically by NetworkAutoManager.
  */
 public class MainActivity extends AppCompatActivity implements ChessGameController.GameUI {
 
@@ -45,12 +45,12 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
 
         setupUI();
         autoManager.start();
+        
+        // Forza l'aggiornamento iniziale dello stato
+        controller.notifyUI();
     }
 
     private void setupUI() {
-        // Switch 1 was for hints, now enabled by default.
-        binding.switch1.setVisibility(View.GONE);
-
         binding.switch2.setOnCheckedChangeListener((v, c) -> { if (c != model.isBlackPointOfView()) model.setBlackPointOfView(c); binding.chessView.invalidate(); });
         binding.switch3.setOnCheckedChangeListener((v, c) -> { model.setAutoRotate(c); binding.chessView.invalidate(); });
         
@@ -85,6 +85,23 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         });
     }
 
+    @Override
+    public void showPromotionDialog(int fC, int fR, int tC, int tR, boolean isWhite) {
+        runOnUiThread(() -> {
+            String suffix = isWhite ? "B" : "N";
+            String[] options = {"Regina", "Torre", "Alfiere", "Cavallo"};
+            String[] codes = {"don" + suffix, "tor" + suffix, "alf" + suffix, "cav" + suffix};
+
+            new AlertDialog.Builder(this)
+                .setTitle("Promozione Pedone")
+                .setItems(options, (dialog, which) -> {
+                    controller.movePiece(fC, fR, tC, tR, codes[which]);
+                })
+                .setCancelable(false)
+                .show();
+        });
+    }
+
     @Override public void refreshBoard() { 
         runOnUiThread(() -> {
             binding.chessView.invalidate();
@@ -93,24 +110,44 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
     }
 
     @Override
-    public void updateStatus(int material, boolean inCheck, boolean whiteTurn, Movement lastMove) {
+    public void updateStatus(int material, boolean inCheck, boolean whiteTurn, Movement lastMove, int legalMovesCount) {
         runOnUiThread(() -> {
-            String status = String.format(Locale.getDefault(), getString(R.string.material_val), material);
-            if (inCheck) status += getString(R.string.check_label);
-            status += (whiteTurn ? getString(R.string.white_turn) : getString(R.string.black_turn));
-            binding.textView3.setText(status);
+            StringBuilder sb = new StringBuilder();
+            
+            if (legalMovesCount == 0) {
+                if (inCheck) {
+                    sb.append(whiteTurn ? "SCACCO MATTO! Il Nero ha vinto" : "SCACCO MATTO! Il Bianco ha vinto");
+                } else {
+                    sb.append("PATTA PER STALLO");
+                }
+            } else {
+                // Interpretazione Vantaggio
+                if (material > 400) sb.append("Il Bianco sta vincendo");
+                else if (material > 150) sb.append("Bianco in netto vantaggio");
+                else if (material > 50) sb.append("Lieve vantaggio Bianco");
+                else if (material < -400) sb.append("Il Nero sta vincendo");
+                else if (material < -150) sb.append("Nero in netto vantaggio");
+                else if (material < -50) sb.append("Lieve vantaggio Nero");
+                else sb.append("Partita equilibrata");
+
+                if (inCheck) sb.append(" (SCACCO!)");
+                
+                sb.append("  •  ");
+                sb.append(whiteTurn ? "Tocca al Bianco" : "Tocca al Nero");
+            }
+            
+            binding.textView3.setText(sb.toString());
 
             if (lastMove != null && lastMove.getX0() != 0) {
-                binding.textView2.setText(String.format(Locale.getDefault(), "[%s%d] -> [%s%d]", 
+                binding.textView2.setText(String.format(Locale.getDefault(), "Ultima mossa: [%s%d] -> [%s%d]", 
                     getLetter(lastMove.getX0()), lastMove.getY0(), getLetter(lastMove.getX()), lastMove.getY()));
             } else {
-                binding.textView2.setText(R.string.new_game);
+                binding.textView2.setText("Inizia una nuova partita");
             }
         });
     }
 
-    @Override
-    public void onConnectionStateChanged(boolean connected) { }
+    @Override public void onConnectionStateChanged(boolean connected) { }
 
     @Override
     public void updateNetworkInfo(String role, String status) {

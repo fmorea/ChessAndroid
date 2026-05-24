@@ -10,7 +10,7 @@
         android:id="@+id/textView4"
         android:layout_width="303dp"
         android:layout_height="521dp"
-        android:text="@string/privacyPolicy"
+        android:text="@string/privacy_policy"
         app:autoSizeTextType="uniform"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
