@@ -23,6 +23,13 @@
             android:layout_height="wrap_content"
             android:text="@string/reset_btn" />
 
+        <Button
+            android:id="@+id/btnRecenter"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CENTER" />
+
         <Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -65,33 +72,40 @@
         android:id="@+id/chess_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/infoContainer"
+        app:layout_constraintBottom_toTopOf="@+id/navControls"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/topBar" />
+        app:layout_constraintTop_toBottomOf="@+id/topBar" />
 
-    <!-- Draggable Navigation Buttons -->
+    <!-- Joystick (Single Row, Fixed between board and info bar) -->
     <LinearLayout
         android:id="@+id/navControls"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="#CCEEEEEE"
-        android:elevation="8dp"
+        android:background="#EEEEEE"
+        android:elevation="2dp"
         android:gravity="center"
-        android:orientation="vertical"
-        android:padding="4dp"
-        app:layout_constraintBottom_toBottomOf="@id/chess_view"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:orientation="horizontal"
+        android:padding="6dp"
+        app:layout_constraintBottom_toTopOf="@+id/infoContainer"
+        app:layout_constraintTop_toBottomOf="@+id/chess_view">
 
-        <ImageView
+        <!-- Added drag handle to fix "cannot find symbol navDragHandle" -->
+        <View
             android:id="@+id/navDragHandle"
-            android:layout_width="match_parent"
-            android:layout_height="24dp"
-            android:alpha="0.6"
-            android:contentDescription="Drag handle"
-            android:scaleType="centerInside"
-            android:src="@android:drawable/ic_menu_sort_by_size" />
+            android:layout_width="20dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:background="#CCCCCC" />
+
+        <Button
+            android:id="@+id/btnLeft"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="0dp"
+            android:padding="0dp"
+            android:text="&lt;" />
 
         <Button
             android:id="@+id/btnUp"
@@ -102,40 +116,6 @@
             android:padding="0dp"
             android:text="^" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnLeft"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="0dp"
-                android:padding="0dp"
-                android:text="&lt;" />
-
-            <Button
-                android:id="@+id/btnSelect"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="0dp"
-                android:padding="0dp"
-                android:text="OK"
-                android:textSize="10sp" />
-
-            <Button
-                android:id="@+id/btnRight"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="0dp"
-                android:padding="0dp"
-                android:text="&gt;" />
-        </LinearLayout>
-
         <Button
             android:id="@+id/btnDown"
             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -144,6 +124,29 @@
             android:minWidth="0dp"
             android:padding="0dp"
             android:text="v" />
+
+        <Button
+            android:id="@+id/btnRight"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="0dp"
+            android:padding="0dp"
+            android:text="&gt;" />
+
+        <Space
+            android:layout_width="24dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btnSelect"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="60dp"
+            android:layout_height="48dp"
+            android:minWidth="0dp"
+            android:padding="0dp"
+            android:text="OK"
+            android:textSize="14sp" />
     </LinearLayout>
 
     <!-- Info Area -->
@@ -154,7 +157,7 @@
         android:background="#FFFFFF"
         android:elevation="8dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@id/bottomAppBar">
+        app:layout_constraintBottom_toTopOf="@+id/bottomAppBar">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -216,6 +219,6 @@
         android:layout_gravity="bottom"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/bottomappbar_menu"
-        app:navigationIcon="@drawable/arrow_back" />
+        app:navigationIcon="@null" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

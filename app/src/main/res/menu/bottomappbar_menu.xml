@@ -3,46 +3,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_zoom_out"
-        android:icon="@android:drawable/ic_menu_zoom"
-        android:orderInCategory="94"
-        android:title="@string/zoom_out_desc"
+        android:id="@+id/action_undo"
+        android:icon="@android:drawable/ic_menu_revert"
+        android:title="Undo"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_redo"
+        android:icon="@android:drawable/ic_media_next"
+        android:title="Redo"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_zoom_in"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="Zoom+"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_zoom_out"
         android:icon="@android:drawable/ic_menu_zoom"
-        android:orderInCategory="95"
-        android:title="@string/zoom_in_desc"
+        android:title="Zoom-"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_draw_tool"
         android:icon="@android:drawable/ic_menu_edit"
-        android:orderInCategory="96"
-        android:title="Strumento Disegno"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_undo"
-        android:icon="@android:drawable/ic_menu_revert"
-        android:orderInCategory="97"
-        android:title="@string/action_undo"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_redo"
-        android:icon="@android:drawable/ic_menu_share"
-        android:orderInCategory="98"
-        android:title="@string/action_redo"
-        app:showAsAction="ifRoom" />
+        android:title="Disegno"
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/action_chat"
-        android:orderInCategory="101"
-        android:title="@string/action_chat" />
+        android:title="Chat"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_privacy_policy"
-        android:orderInCategory="100"
-        android:title="Privacy policy" />
+        android:title="Privacy Policy"
+        app:showAsAction="never" />
 </menu>

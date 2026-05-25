@@ -86,7 +86,12 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
     }
 
     private void setupUI() {
-        binding.switch2.setOnCheckedChangeListener((v, c) -> { if (c != model.isBlackPointOfView()) model.setBlackPointOfView(c); binding.chessView.invalidate(); });
+        binding.switch2.setOnCheckedChangeListener((v, c) -> { 
+            if (c != model.isBlackPointOfView()) {
+                model.setBlackPointOfView(c);
+                binding.chessView.setBoardOrientation(c);
+            }
+        });
         binding.switch3.setOnCheckedChangeListener((v, c) -> { model.setAutoRotate(c); binding.chessView.invalidate(); });
         
         binding.switchLoopback.setOnCheckedChangeListener((v, isChecked) -> {
@@ -108,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         });
 
         binding.button.setOnClickListener(v -> controller.resetGame());
+        binding.btnRecenter.setOnClickListener(v -> binding.chessView.recenter());
 
         // WASD Listeners
         binding.btnUp.setOnClickListener(v -> binding.chessView.moveCursor(0, 1));
@@ -227,9 +233,9 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
                     break;
             }
 
-            // Calcola il tilt per l'effetto parallasse (gravità visiva)
+            // Calcola il tilt per l'effetto gravità dei pezzi (alto/basso del dispositivo)
             float multiplier = 3.2f;
-            binding.chessView.setTilt(-screenX * multiplier, screenY * multiplier);
+            binding.chessView.setGravityTilt(-screenX * multiplier, screenY * multiplier);
 
             // Auto-rotazione della scacchiera basata sulla gravità reale (alto/basso)
             if (model.isAutoRotate()) {
@@ -266,8 +272,9 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
 
     @Override public void refreshBoard() { 
         runOnUiThread(() -> {
-            binding.chessView.invalidate();
+            binding.chessView.setBoardOrientation(model.isBlackPointOfView());
             binding.switch2.setChecked(model.isBlackPointOfView());
+            binding.chessView.invalidate();
         });
     }
 
@@ -303,6 +310,8 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         });
     }
 
+    private String getLetter(int col) { return String.valueOf((char)('a' + col - 1)); }
+
     @Override public void onConnectionStateChanged(boolean connected) { }
 
     @Override
@@ -317,16 +326,5 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         });
     }
 
-    @Override public void onMessage(String msg) { 
-        runOnUiThread(() -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show());
-    }
-
-    private String getLetter(int i) { return (i < 1 || i > 8) ? "" : String.valueOf((char)('a' + i - 1)); }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        autoManager.stop();
-        loopbackTransport.disconnect();
-    }
+    @Override public void onMessage(String msg) { runOnUiThread(() -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()); }
 }
