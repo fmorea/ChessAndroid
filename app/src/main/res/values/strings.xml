@@ -4,7 +4,11 @@
     <string name="hints_switch">Suggerimenti</string>
     <string name="autorotate_switch">Auto-ruota</string>
     <string name="black_pov_switch">Nero</string>
+    <string name="loopback_switch">Loopback Test</string>
     <string name="pen_tool_desc">Penna</string>
+    <string name="eraser_tool_desc">Gomma</string>
+    <string name="zoom_in_desc">Zoom In</string>
+    <string name="zoom_out_desc">Zoom Out</string>
 
     <string name="invalid_move">Mossa non valida!</string>
     <string name="game_reset">Partita resettata</string>
@@ -34,4 +38,5 @@
     <!-- Network -->
     <string name="net_role_prefix">Ruolo: %s</string>
     <string name="net_status_prefix">Stato: %s</string>
+    <string name="loopback_active">LOOPBACK ATTIVO (Self-Test)</string>
 </resources>

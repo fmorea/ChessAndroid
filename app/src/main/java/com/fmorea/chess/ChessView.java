@@ -119,6 +119,16 @@ public class ChessView extends View {
         });
     }
 
+    public void zoomIn() {
+        transformMatrix.postScale(1.2f, 1.2f, getWidth() / 2f, getHeight() / 2f);
+        invalidate();
+    }
+
+    public void zoomOut() {
+        transformMatrix.postScale(0.8f, 0.8f, getWidth() / 2f, getHeight() / 2f);
+        invalidate();
+    }
+
     private void handleTap(float x, float y) {
         int col = getColFromX(x);
         int row = getRowFromY(y);
@@ -163,17 +173,30 @@ public class ChessView extends View {
         invalidate();
     }
 
+    public boolean isPenMode() { return isPenMode; }
+
     public void setEraserMode(boolean enabled) {
         this.isEraserMode = enabled;
-        if (enabled) this.isPenMode = false;
+          if (enabled) this.isPenMode = false;
         invalidate();
     }
 
+    public boolean isEraserMode() { return isEraserMode; }
+
     private void updateBoardMetrics() {
-        float chessBoardSide = Math.min(getWidth(), getHeight()) * 0.9f;
+        // Use full width by default
+        float chessBoardSide = getWidth();
         cellSide = chessBoardSide / 8f;
-        originX = (getWidth() - chessBoardSide) / 2f;
+        originX = 0f;
         originY = (getHeight() - chessBoardSide) / 2f;
+        
+        // If height is smaller (landscape), use height instead
+        if (originY < 0) {
+            chessBoardSide = getHeight();
+            cellSide = chessBoardSide / 8f;
+            originY = 0f;
+            originX = (getWidth() - chessBoardSide) / 2f;
+        }
     }
 
     @Override
@@ -214,38 +237,34 @@ public class ChessView extends View {
     }
 
     private void drawNotation(Canvas canvas) {
-        infoPaint.setTextSize(cellSide * 0.25f);
-        infoPaint.setColor(Color.GRAY);
+        float textSize = cellSide * 0.18f;
+        infoPaint.setTextSize(textSize);
+        boolean isBlackPOV = (chessDelegate != null && chessDelegate.blackPointOfView());
         
-        // Columns a-h (Bottom and Top)
-        infoPaint.setTextAlign(Paint.Align.CENTER);
+        // --- Letters (a-h) on the bottom row squares ---
+        int bottomRow = isBlackPOV ? 8 : 1;
+        infoPaint.setTextAlign(Paint.Align.RIGHT);
         for (int col = 1; col <= 8; col++) {
             String label = String.valueOf((char) ('a' + col - 1));
-            float x = getScreenX(col) + cellSide / 2;
+            float x = getScreenX(col) + cellSide - (textSize * 0.2f);
+            float y = getScreenY(bottomRow) + cellSide - (textSize * 0.2f);
             
-            // Bottom
-            float yBottom = originY + 8 * cellSide + infoPaint.getTextSize() * 1.2f;
-            canvas.drawText(label, x, yBottom, infoPaint);
-            
-            // Top
-            float yTop = originY - infoPaint.getTextSize() * 0.5f;
-            canvas.drawText(label, x, yTop, infoPaint);
+            boolean isDark = (col + bottomRow) % 2 == 1;
+            infoPaint.setColor(isDark ? lightColor : darkColor);
+            canvas.drawText(label, x, y, infoPaint);
         }
 
-        // Rows 1-8 (Left and Right)
+        // --- Numbers (1-8) on the left column squares ---
+        int leftCol = isBlackPOV ? 8 : 1;
+        infoPaint.setTextAlign(Paint.Align.LEFT);
         for (int row = 1; row <= 8; row++) {
             String label = String.valueOf(row);
-            float y = getScreenY(row) + cellSide / 2 + infoPaint.getTextSize() / 2 - 5f;
+            float x = getScreenX(leftCol) + (textSize * 0.2f);
+            float y = getScreenY(row) + textSize;
             
-            // Left
-            infoPaint.setTextAlign(Paint.Align.RIGHT);
-            float xLeft = originX - cellSide * 0.15f;
-            canvas.drawText(label, xLeft, y, infoPaint);
-            
-            // Right
-            infoPaint.setTextAlign(Paint.Align.LEFT);
-            float xRight = originX + 8 * cellSide + cellSide * 0.15f;
-            canvas.drawText(label, xRight, y, infoPaint);
+            boolean isDark = (leftCol + row) % 2 == 1;
+            infoPaint.setColor(isDark ? lightColor : darkColor);
+            canvas.drawText(label, x, y, infoPaint);
         }
     }
 

@@ -1,14 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
-        android:id="@+id/action_chat"
-        android:orderInCategory="101"
-        android:title="@string/action_chat" />
+        android:id="@+id/action_zoom_out"
+        android:icon="@android:drawable/ic_menu_zoom"
+        android:orderInCategory="94"
+        android:title="@string/zoom_out_desc"
+        app:showAsAction="always" />
+
     <item
-        android:id="@+id/action_privacy_policy"
-        android:orderInCategory="100"
-        android:title="Privacy policy" />
+        android:id="@+id/action_zoom_in"
+        android:icon="@android:drawable/ic_menu_zoom"
+        android:orderInCategory="95"
+        android:title="@string/zoom_in_desc"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_pen"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:orderInCategory="96"
+        android:title="@string/pen_tool_desc"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_eraser"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:orderInCategory="97"
+        android:title="@string/eraser_tool_desc"
+        app:showAsAction="always" />
+
     <item
         android:id="@+id/action_undo"
         android:icon="@drawable/arrow_back"
@@ -21,4 +42,13 @@
         android:orderInCategory="99"
         android:title="@string/action_redo"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_chat"
+        android:orderInCategory="101"
+        android:title="@string/action_chat" />
+    <item
+        android:id="@+id/action_privacy_policy"
+        android:orderInCategory="100"
+        android:title="Privacy policy" />
 </menu>

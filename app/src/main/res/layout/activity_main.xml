@@ -19,24 +19,6 @@
         android:padding="8dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
-            android:id="@+id/btnPen"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/pen_tool_desc"
-            android:padding="8dp"
-            android:src="@android:drawable/ic_menu_edit" />
-
-        <ImageButton
-            android:id="@+id/btnEraser"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Eraser"
-            android:padding="8dp"
-            android:src="@android:drawable/ic_menu_delete" />
-
         <Button
             android:id="@+id/button"
             android:layout_width="wrap_content"
@@ -54,17 +36,17 @@
             android:layout_height="wrap_content"
             android:gravity="end"
             android:orientation="vertical">
-            <Switch android:id="@+id/switch3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/autorotate_switch" android:textSize="11sp" tools:ignore="UseSwitchCompatOrMaterialXml" />
-            <Switch android:id="@+id/switch2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/black_pov_switch" android:textSize="11sp" tools:ignore="UseSwitchCompatOrMaterialXml" />
+            <Switch android:id="@+id/switchLoopback" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/loopback_switch" android:textSize="10sp" tools:ignore="UseSwitchCompatOrMaterialXml" />
+            <Switch android:id="@+id/switch3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/autorotate_switch" android:textSize="10sp" tools:ignore="UseSwitchCompatOrMaterialXml" />
+            <Switch android:id="@+id/switch2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/black_pov_switch" android:textSize="10sp" tools:ignore="UseSwitchCompatOrMaterialXml" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Board -->
+    <!-- Board - Removed margin to occupy full width -->
     <com.fmorea.chess.ChessView
         android:id="@+id/chess_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_margin="4dp"
         app:layout_constraintBottom_toTopOf="@+id/infoContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -133,13 +115,82 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Justified Bottom Menu -->
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
         style="@style/Widget.MaterialComponents.BottomAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/bottomappbar_menu" />
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btnZoomOut"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_zoom"
+                android:contentDescription="@string/zoom_out_desc"
+                app:tint="#616161" />
+
+            <ImageButton
+                android:id="@+id/btnZoomIn"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_zoom"
+                android:contentDescription="@string/zoom_in_desc"
+                app:tint="#616161" />
+
+            <ImageButton
+                android:id="@+id/btnPenTool"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_edit"
+                android:contentDescription="@string/pen_tool_desc"
+                app:tint="#616161" />
+
+            <ImageButton
+                android:id="@+id/btnEraserTool"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_delete"
+                android:contentDescription="@string/eraser_tool_desc"
+                app:tint="#616161" />
+
+            <ImageButton
+                android:id="@+id/btnUndoTool"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/arrow_back"
+                android:contentDescription="@string/action_undo"
+                app:tint="#616161" />
+
+            <ImageButton
+                android:id="@+id/btnRedoTool"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/arrow_redo"
+                android:contentDescription="@string/action_redo"
+                app:tint="#616161" />
+
+        </LinearLayout>
+    </com.google.android.material.bottomappbar.BottomAppBar>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
