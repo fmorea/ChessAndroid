@@ -1,9 +1,16 @@
 package com.fmorea.chess;
 
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
@@ -11,11 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.fmorea.chess.databinding.ActivityMainBinding;
 import java.util.Locale;
 
-/**
- * MainActivity handles the UI layer of the Chess application.
- * Following Unix philosophy: it focuses on user interaction and display.
- */
-public class MainActivity extends AppCompatActivity implements ChessGameController.GameUI {
+public class MainActivity extends AppCompatActivity implements ChessGameController.GameUI, SensorEventListener {
 
     private ActivityMainBinding binding;
     private final ChessModel model = new ChessModel();
@@ -25,10 +28,14 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
     private NetworkAutoManager autoManager;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
-    // Loopback for testing both client and server on the same device
     private NetworkHandler loopbackTransport;
     private ChessGameController loopbackController;
     private final ChessModel loopbackModel = new ChessModel();
+
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private Sensor gravitySensor;
+    private int drawMode = 0; // 0: OFF, 1: PEN, 2: ERASER
 
     private static NetworkHandler sharedTransport;
     public static NetworkHandler getTransport() { return sharedTransport; }
@@ -48,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         
         autoManager = new NetworkAutoManager(discovery, transport, controller);
 
-        // Setup loopback components (acts as the "remote" peer on localhost)
         loopbackTransport = new NetworkHandler(50000);
         loopbackController = new ChessGameController(loopbackModel, loopbackTransport, new ChessGameController.GameUI() {
             @Override public void refreshBoard() {}
@@ -64,9 +70,19 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         model.setChessDelegate(controller);
 
         setupUI();
-        autoManager.start();
+        makeNavControlsDraggable();
+        setupSensors();
         
+        autoManager.start();
         controller.notifyUI();
+    }
+
+    private void setupSensors() {
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        gravitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+        if (gravitySensor == null) {
+            accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        }
     }
 
     private void setupUI() {
@@ -78,13 +94,10 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
                 autoManager.stop();
                 transport.disconnect();
                 loopbackTransport.disconnect();
-                
-                // Start a server on localhost and connect to it as a client
                 handler.postDelayed(() -> {
                     loopbackTransport.startServer();
                     handler.postDelayed(() -> transport.connect("127.0.0.1"), 500);
                 }, 500);
-                
                 Toast.makeText(this, "Loopback Mode: ON", Toast.LENGTH_SHORT).show();
             } else {
                 loopbackTransport.disconnect();
@@ -96,32 +109,143 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
 
         binding.button.setOnClickListener(v -> controller.resetGame());
 
-        // Bottom Menu Observers
-        binding.btnZoomOut.setOnClickListener(v -> binding.chessView.zoomOut());
-        binding.btnZoomIn.setOnClickListener(v -> binding.chessView.zoomIn());
-        
-        binding.btnPenTool.setOnClickListener(v -> {
-            boolean active = !binding.chessView.isPenMode();
-            binding.chessView.setPenMode(active);
-            v.setBackgroundColor(active ? 0x33FF0000 : 0x00000000);
-            binding.btnEraserTool.setBackgroundColor(0x00000000);
-            Toast.makeText(this, active ? "Pen Mode: ON" : "Pen Mode: OFF", Toast.LENGTH_SHORT).show();
+        // WASD Listeners
+        binding.btnUp.setOnClickListener(v -> binding.chessView.moveCursor(0, 1));
+        binding.btnDown.setOnClickListener(v -> binding.chessView.moveCursor(0, -1));
+        binding.btnLeft.setOnClickListener(v -> binding.chessView.moveCursor(-1, 0));
+        binding.btnRight.setOnClickListener(v -> binding.chessView.moveCursor(1, 0));
+        binding.btnSelect.setOnClickListener(v -> binding.chessView.selectCursor());
+
+        // Bottom Menu handling
+        binding.bottomAppBar.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.action_zoom_in) {
+                binding.chessView.zoomIn();
+                return true;
+            } else if (id == R.id.action_zoom_out) {
+                binding.chessView.zoomOut();
+                return true;
+            } else if (id == R.id.action_draw_tool) {
+                drawMode = (drawMode + 1) % 3;
+                if (drawMode == 0) {
+                    binding.chessView.setPenMode(false);
+                    binding.chessView.setEraserMode(false);
+                    Toast.makeText(this, "Disegno: OFF", Toast.LENGTH_SHORT).show();
+                    item.setIcon(android.R.drawable.ic_menu_edit);
+                } else if (drawMode == 1) {
+                    binding.chessView.setPenMode(true);
+                    Toast.makeText(this, "Modalità PENNA", Toast.LENGTH_SHORT).show();
+                    item.setIcon(android.R.drawable.ic_menu_edit);
+                } else {
+                    binding.chessView.setEraserMode(true);
+                    Toast.makeText(this, "Modalità GOMMA", Toast.LENGTH_SHORT).show();
+                    item.setIcon(android.R.drawable.ic_menu_delete);
+                }
+                return true;
+            } else if (id == R.id.action_undo) {
+                controller.undo();
+                return true;
+            } else if (id == R.id.action_redo) {
+                controller.redo();
+                return true;
+            } else if (id == R.id.action_chat) {
+                startActivity(new Intent(this, ChatActivity.class));
+                return true;
+            } else if (id == R.id.action_privacy_policy) {
+                startActivity(new Intent(this, PrivacyPolicy.class));
+                return true;
+            }
+            return false;
         });
-
-        binding.btnEraserTool.setOnClickListener(v -> {
-            boolean active = !binding.chessView.isEraserMode();
-            binding.chessView.setEraserMode(active);
-            v.setBackgroundColor(active ? 0x330000FF : 0x00000000);
-            binding.btnPenTool.setBackgroundColor(0x00000000);
-            Toast.makeText(this, active ? "Eraser Mode: ON" : "Eraser Mode: OFF", Toast.LENGTH_SHORT).show();
-        });
-
-        binding.btnUndoTool.setOnClickListener(v -> controller.undo());
-        binding.btnRedoTool.setOnClickListener(v -> controller.redo());
-
-        // Over-menu items (Chat, Privacy) are still available via standard menu if needed, 
-        // but for now we've moved the main tools to direct buttons.
     }
+
+    private void makeNavControlsDraggable() {
+        binding.navDragHandle.setOnTouchListener(new View.OnTouchListener() {
+            float dX, dY;
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        dX = binding.navControls.getX() - event.getRawX();
+                        dY = binding.navControls.getY() - event.getRawY();
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        binding.navControls.setX(event.getRawX() + dX);
+                        binding.navControls.setY(event.getRawY() + dY);
+                        break;
+                    default:
+                        return false;
+                }
+                return true;
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (gravitySensor != null) {
+            sensorManager.registerListener(this, gravitySensor, SensorManager.SENSOR_DELAY_GAME);
+        } else if (accelerometer != null) {
+            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_GRAVITY || event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            float x = event.values[0];
+            float y = event.values[1];
+
+            // Ottieni la rotazione del display per mappare correttamente gli assi
+            int rotation = getWindowManager().getDefaultDisplay().getRotation();
+            float screenX, screenY;
+
+            switch (rotation) {
+                case Surface.ROTATION_90:
+                    screenX = -y;
+                    screenY = x;
+                    break;
+                case Surface.ROTATION_180:
+                    screenX = -x;
+                    screenY = -y;
+                    break;
+                case Surface.ROTATION_270:
+                    screenX = y;
+                    screenY = -x;
+                    break;
+                case Surface.ROTATION_0:
+                default:
+                    screenX = x;
+                    screenY = y;
+                    break;
+            }
+
+            // Calcola il tilt per l'effetto parallasse (gravità visiva)
+            float multiplier = 3.2f;
+            binding.chessView.setTilt(-screenX * multiplier, screenY * multiplier);
+
+            // Auto-rotazione della scacchiera basata sulla gravità reale (alto/basso)
+            if (model.isAutoRotate()) {
+                if (screenY < -4.5f && !model.isBlackPointOfView()) {
+                    model.setBlackPointOfView(true);
+                    refreshBoard();
+                } else if (screenY > 4.5f && model.isBlackPointOfView()) {
+                    model.setBlackPointOfView(false);
+                    refreshBoard();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     @Override
     public void showPromotionDialog(int fC, int fR, int tC, int tR, boolean isWhite) {
@@ -151,7 +275,6 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
     public void updateStatus(int material, boolean inCheck, boolean whiteTurn, Movement lastMove, int legalMovesCount) {
         runOnUiThread(() -> {
             StringBuilder sb = new StringBuilder();
-            
             if (legalMovesCount == 0) {
                 if (inCheck) {
                     sb.append(whiteTurn ? "SCACCO MATTO! Il Nero ha vinto" : "SCACCO MATTO! Il Bianco ha vinto");
@@ -166,15 +289,11 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
                 else if (material < -150) sb.append("Nero in netto vantaggio");
                 else if (material < -50) sb.append("Lieve vantaggio Nero");
                 else sb.append("Partita equilibrata");
-
                 if (inCheck) sb.append(" (SCACCO!)");
-                
                 sb.append("  •  ");
                 sb.append(whiteTurn ? "Tocca al Bianco" : "Tocca al Nero");
             }
-            
             binding.textView3.setText(sb.toString());
-
             if (lastMove != null && lastMove.getX0() != 0) {
                 binding.textView2.setText(String.format(Locale.getDefault(), "Ultima mossa: [%s%d] -> [%s%d]", 
                     getLetter(lastMove.getX0()), lastMove.getY0(), getLetter(lastMove.getX()), lastMove.getY()));

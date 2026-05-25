@@ -4,26 +4,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
     tools:context=".MainActivity">
 
-    <!-- Header / Tools -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
+        android:background="#f5f5f5"
         android:elevation="4dp"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="8dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <Button
             android:id="@+id/button"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:text="@string/reset_btn" />
 
         <Space
@@ -36,13 +33,34 @@
             android:layout_height="wrap_content"
             android:gravity="end"
             android:orientation="vertical">
-            <Switch android:id="@+id/switchLoopback" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/loopback_switch" android:textSize="10sp" tools:ignore="UseSwitchCompatOrMaterialXml" />
-            <Switch android:id="@+id/switch3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/autorotate_switch" android:textSize="10sp" tools:ignore="UseSwitchCompatOrMaterialXml" />
-            <Switch android:id="@+id/switch2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/black_pov_switch" android:textSize="10sp" tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            <Switch
+                android:id="@+id/switchLoopback"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/loopback_switch"
+                android:textSize="10sp"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            <Switch
+                android:id="@+id/switch3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/autorotate_switch"
+                android:textSize="10sp"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            <Switch
+                android:id="@+id/switch2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/black_pov_switch"
+                android:textSize="10sp"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Board - Removed margin to occupy full width -->
+    <!-- Board -->
     <com.fmorea.chess.ChessView
         android:id="@+id/chess_view"
         android:layout_width="0dp"
@@ -52,145 +70,152 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/topBar" />
 
-    <!-- Info Area (Status + Network) -->
+    <!-- Draggable Navigation Buttons -->
+    <LinearLayout
+        android:id="@+id/navControls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="#CCEEEEEE"
+        android:elevation="8dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="4dp"
+        app:layout_constraintBottom_toBottomOf="@id/chess_view"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/navDragHandle"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:alpha="0.6"
+            android:contentDescription="Drag handle"
+            android:scaleType="centerInside"
+            android:src="@android:drawable/ic_menu_sort_by_size" />
+
+        <Button
+            android:id="@+id/btnUp"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="0dp"
+            android:padding="0dp"
+            android:text="^" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnLeft"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:text="&lt;" />
+
+            <Button
+                android:id="@+id/btnSelect"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:text="OK"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/btnRight"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:text="&gt;" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnDown"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="0dp"
+            android:padding="0dp"
+            android:text="v" />
+    </LinearLayout>
+
+    <!-- Info Area -->
     <LinearLayout
         android:id="@+id/infoContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:elevation="8dp"
         android:background="#FFFFFF"
+        android:elevation="8dp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@id/bottomAppBar">
 
-        <!-- Status Message -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="8dp">
 
             <TextView
                 android:id="@+id/textView3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="#212121"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:text="@string/status_balanced" />
+                android:text="White's turn"
+                android:textColor="#333333"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/textView2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:gravity="center"
+                android:text="New game"
                 android:textColor="#757575"
-                android:textSize="12sp"
-                android:text="@string/new_game" />
+                android:textSize="11sp" />
         </LinearLayout>
 
-        <!-- Network Info -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#EEEEEE"
-            android:orientation="vertical"
-            android:padding="6dp">
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="4dp">
+
             <TextView
                 android:id="@+id/textViewNetworkRole"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
                 android:textColor="#616161"
-                android:textSize="10sp"
+                android:textSize="9sp"
                 android:textStyle="bold" />
+
+            <Space
+                android:layout_width="16dp"
+                android:layout_height="wrap_content" />
+
             <TextView
                 android:id="@+id/textViewNetworkStatus"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
                 android:textColor="#9E9E9E"
                 android:textSize="9sp" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Justified Bottom Menu -->
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
         style="@style/Widget.MaterialComponents.BottomAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <ImageButton
-                android:id="@+id/btnZoomOut"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_zoom"
-                android:contentDescription="@string/zoom_out_desc"
-                app:tint="#616161" />
-
-            <ImageButton
-                android:id="@+id/btnZoomIn"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_zoom"
-                android:contentDescription="@string/zoom_in_desc"
-                app:tint="#616161" />
-
-            <ImageButton
-                android:id="@+id/btnPenTool"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_edit"
-                android:contentDescription="@string/pen_tool_desc"
-                app:tint="#616161" />
-
-            <ImageButton
-                android:id="@+id/btnEraserTool"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_delete"
-                android:contentDescription="@string/eraser_tool_desc"
-                app:tint="#616161" />
-
-            <ImageButton
-                android:id="@+id/btnUndoTool"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/arrow_back"
-                android:contentDescription="@string/action_undo"
-                app:tint="#616161" />
-
-            <ImageButton
-                android:id="@+id/btnRedoTool"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/arrow_redo"
-                android:contentDescription="@string/action_redo"
-                app:tint="#616161" />
-
-        </LinearLayout>
-    </com.google.android.material.bottomappbar.BottomAppBar>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:menu="@menu/bottomappbar_menu"
+        app:navigationIcon="@drawable/arrow_back" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -17,31 +17,25 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_pen"
+        android:id="@+id/action_draw_tool"
         android:icon="@android:drawable/ic_menu_edit"
         android:orderInCategory="96"
-        android:title="@string/pen_tool_desc"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_eraser"
-        android:icon="@android:drawable/ic_menu_delete"
-        android:orderInCategory="97"
-        android:title="@string/eraser_tool_desc"
+        android:title="Strumento Disegno"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_undo"
-        android:icon="@drawable/arrow_back"
-        android:orderInCategory="98"
+        android:icon="@android:drawable/ic_menu_revert"
+        android:orderInCategory="97"
         android:title="@string/action_undo"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/action_redo"
-        android:icon="@drawable/arrow_redo"
-        android:orderInCategory="99"
+        android:icon="@android:drawable/ic_menu_share"
+        android:orderInCategory="98"
         android:title="@string/action_redo"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_chat"

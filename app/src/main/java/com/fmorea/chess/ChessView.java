@@ -9,6 +9,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -35,6 +37,7 @@ public class ChessView extends View {
     private final Matrix transformMatrix = new Matrix();
     private ScaleGestureDetector scaleDetector;
     private GestureDetector gestureDetector;
+    private float lastAngle = 0f;
 
     private boolean isPenMode = false;
     private boolean isEraserMode = false;
@@ -44,6 +47,7 @@ public class ChessView extends View {
     private final Paint hintPaint = new Paint();
     private final Paint touchPaint = new Paint();
     private final Paint selectionPaint = new Paint();
+    private final Paint cursorPaint = new Paint();
     private final Paint infoPaint = new Paint();
 
     private final Map<Integer, Bitmap> bitmaps = new HashMap<>();
@@ -52,8 +56,12 @@ public class ChessView extends View {
     private Piece movingPiece = null;
     private int fromCol = -1, fromRow = -1;
     private int selectedCol = -1, selectedRow = -1;
+    private int cursorCol = 4, cursorRow = 4; // WASD Cursor
     private float movingPieceX, movingPieceY;
     private boolean isDraggingPiece = false;
+
+    private float tiltX = 0f;
+    private float tiltY = 0f;
 
     private ChessDelegate chessDelegate = null;
 
@@ -61,6 +69,20 @@ public class ChessView extends View {
         super(context, attrs);
         loadBitmaps();
         initTools(context);
+    }
+
+    private void loadBitmaps() {
+        int[] resIDs = {
+                R.drawable.pawn_white, R.drawable.pawn_black,
+                R.drawable.bishop_white, R.drawable.bishop_black,
+                R.drawable.knight_white, R.drawable.knight_black,
+                R.drawable.king_white, R.drawable.king_black,
+                R.drawable.queen_white, R.drawable.queen_black,
+                R.drawable.rook_white, R.drawable.rook_black
+        };
+        for (int resID : resIDs) {
+            bitmaps.put(resID, BitmapFactory.decodeResource(getResources(), resID));
+        }
     }
 
     private void initTools(Context context) {
@@ -76,9 +98,13 @@ public class ChessView extends View {
         touchPaint.setColor(Color.argb(150, 255, 255, 255));
         touchPaint.setStyle(Paint.Style.FILL);
 
-        selectionPaint.setColor(Color.argb(100, 255, 255, 255));
+        selectionPaint.setColor(Color.argb(180, 255, 255, 255));
         selectionPaint.setStyle(Paint.Style.STROKE);
-        selectionPaint.setStrokeWidth(6f);
+        selectionPaint.setStrokeWidth(8f);
+
+        cursorPaint.setColor(Color.argb(150, 255, 165, 0)); // Orange cursor
+        cursorPaint.setStyle(Paint.Style.STROKE);
+        cursorPaint.setStrokeWidth(10f);
 
         infoPaint.setAntiAlias(true);
         infoPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
@@ -119,6 +145,22 @@ public class ChessView extends View {
         });
     }
 
+    public void setTilt(float x, float y) {
+        this.tiltX = x;
+        this.tiltY = y;
+        invalidate();
+    }
+
+    public void moveCursor(int dCol, int dRow) {
+        cursorCol = Math.max(1, Math.min(8, cursorCol + dCol));
+        cursorRow = Math.max(1, Math.min(8, cursorRow + dRow));
+        invalidate();
+    }
+
+    public void selectCursor() {
+        handleTapOnCell(cursorCol, cursorRow);
+    }
+
     public void zoomIn() {
         transformMatrix.postScale(1.2f, 1.2f, getWidth() / 2f, getHeight() / 2f);
         invalidate();
@@ -132,13 +174,18 @@ public class ChessView extends View {
     private void handleTap(float x, float y) {
         int col = getColFromX(x);
         int row = getRowFromY(y);
+        handleTapOnCell(col, row);
+    }
 
+    private void handleTapOnCell(int col, int row) {
         if (col < 1 || col > 8 || row < 1 || row > 8) {
             selectedCol = -1;
             selectedRow = -1;
             invalidate();
             return;
         }
+
+        performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
 
         if (selectedCol != -1 && selectedRow != -1) {
             if (selectedCol == col && selectedRow == row) {
@@ -164,6 +211,8 @@ public class ChessView extends View {
                 selectedRow = row;
             }
         }
+        cursorCol = col;
+        cursorRow = row;
         invalidate();
     }
 
@@ -199,16 +248,26 @@ public class ChessView extends View {
         }
     }
 
+    private float getRotationAngle() {
+        float[] v = new float[9];
+        transformMatrix.getValues(v);
+        return (float) Math.toDegrees(Math.atan2(v[Matrix.MSKEW_Y], v[Matrix.MSCALE_X]));
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         updateBoardMetrics();
         canvas.save();
         canvas.concat(transformMatrix);
-
+        
+        // Background elements (static)
         drawInfiniteGrid(canvas);
         drawChessboard(canvas);
         drawNotation(canvas);
+
+        // Foreground elements (affected by tilt gravity/parallax)
         drawSelection(canvas);
+        drawCursor(canvas);
         drawHints(canvas);
         drawPieces(canvas);
         drawStrokes(canvas);
@@ -217,10 +276,21 @@ public class ChessView extends View {
         if (isDraggingPiece) {
             canvas.drawCircle(movingPieceX, movingPieceY, cellSide / 6, touchPaint);
             if (movingPieceBitmap != null) {
+                float rotation = getRotationAngle();
+                canvas.save();
+                
+                // Parallax for the moving piece too
+                float rad = (float) Math.toRadians(-rotation);
+                float tx = tiltX * (float)Math.cos(rad) - tiltY * (float)Math.sin(rad);
+                float ty = tiltX * (float)Math.sin(rad) + tiltY * (float)Math.cos(rad);
+                canvas.translate(tx, ty);
+
+                canvas.rotate(-rotation, movingPieceX, movingPieceY);
                 float offset = cellSide;
-                RectF dest = new RectF(movingPieceX - cellSide/2, movingPieceY - cellSide/2 - offset,
-                        movingPieceX + cellSide/2, movingPieceY + cellSide/2 - offset);
+                RectF dest = new RectF(movingPieceX - cellSide/2, movingPieceY - offset - cellSide/2,
+                        movingPieceX + cellSide/2, movingPieceY - offset + cellSide/2);
                 canvas.drawBitmap(movingPieceBitmap, null, dest, paint);
+                canvas.restore();
             }
         }
 
@@ -240,37 +310,38 @@ public class ChessView extends View {
         float textSize = cellSide * 0.18f;
         infoPaint.setTextSize(textSize);
         boolean isBlackPOV = (chessDelegate != null && chessDelegate.blackPointOfView());
+        float rotation = getRotationAngle();
         
-        // --- Letters (a-h) on the bottom row squares ---
         int bottomRow = isBlackPOV ? 8 : 1;
         infoPaint.setTextAlign(Paint.Align.RIGHT);
         for (int col = 1; col <= 8; col++) {
             String label = String.valueOf((char) ('a' + col - 1));
             float x = getScreenX(col) + cellSide - (textSize * 0.2f);
             float y = getScreenY(bottomRow) + cellSide - (textSize * 0.2f);
-            
             boolean isDark = (col + bottomRow) % 2 == 1;
             infoPaint.setColor(isDark ? lightColor : darkColor);
+            canvas.save();
+            canvas.rotate(-rotation, x, y);
             canvas.drawText(label, x, y, infoPaint);
+            canvas.restore();
         }
 
-        // --- Numbers (1-8) on the left column squares ---
         int leftCol = isBlackPOV ? 8 : 1;
         infoPaint.setTextAlign(Paint.Align.LEFT);
         for (int row = 1; row <= 8; row++) {
             String label = String.valueOf(row);
             float x = getScreenX(leftCol) + (textSize * 0.2f);
             float y = getScreenY(row) + textSize;
-            
             boolean isDark = (leftCol + row) % 2 == 1;
             infoPaint.setColor(isDark ? lightColor : darkColor);
+            canvas.save();
+            canvas.rotate(-rotation, x, y);
             canvas.drawText(label, x, y, infoPaint);
+            canvas.restore();
         }
     }
 
-    private void drawInfo(Canvas canvas) {
-        // Info text is now handled by MainActivity's TextViews for better localization and UX.
-    }
+    private void drawInfo(Canvas canvas) { }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -299,6 +370,23 @@ public class ChessView extends View {
                 movingPiece = null;
                 invalidate();
             }
+
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    lastAngle = calculateAngle(event);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float newAngle = calculateAngle(event);
+                    float deltaAngle = newAngle - lastAngle;
+                    if (deltaAngle > 180) deltaAngle -= 360;
+                    else if (deltaAngle < -180) deltaAngle += 360;
+                    float px = (event.getX(0) + event.getX(1)) / 2f;
+                    float py = (event.getY(0) + event.getY(1)) / 2f;
+                    transformMatrix.postRotate(deltaAngle, px, py);
+                    lastAngle = newAngle;
+                    invalidate();
+                    break;
+            }
             return true;
         }
 
@@ -309,12 +397,16 @@ public class ChessView extends View {
                 if (chessDelegate != null) {
                     movingPiece = chessDelegate.pieceAt(fromCol, fromRow);
                     if (movingPiece != null) {
-                        isDraggingPiece = true;
-                        movingPieceBitmap = bitmaps.get(movingPiece.getResID());
-                        movingPieceX = x;
-                        movingPieceY = y;
-                        selectedCol = -1;
-                        selectedRow = -1;
+                        boolean isWhiteTurn = chessDelegate.isWhiteTurn();
+                        if ((isWhiteTurn && movingPiece.getPlayer() == Player.WHITE) || 
+                            (!isWhiteTurn && movingPiece.getPlayer() == Player.BLACK)) {
+                            
+                            performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
+                            isDraggingPiece = true;
+                            movingPieceBitmap = bitmaps.get(movingPiece.getResID());
+                            movingPieceX = x;
+                            movingPieceY = y;
+                        }
                     }
                 }
                 break;
@@ -326,9 +418,13 @@ public class ChessView extends View {
                 break;
             case MotionEvent.ACTION_UP:
                 if (isDraggingPiece) {
+                    performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
                     int toCol = getColFromX(x);
                     int toRow = getRowFromY(y);
-                    if (chessDelegate != null) chessDelegate.movePiece(fromCol, fromRow, toCol, toRow);
+                    if (chessDelegate != null && chessDelegate.movePiece(fromCol, fromRow, toCol, toRow)) {
+                        selectedCol = -1;
+                        selectedRow = -1;
+                    }
                     isDraggingPiece = false;
                     movingPiece = null;
                 }
@@ -336,6 +432,12 @@ public class ChessView extends View {
         }
         invalidate();
         return true;
+    }
+
+    private float calculateAngle(MotionEvent event) {
+        float dx = event.getX(0) - event.getX(1);
+        float dy = event.getY(0) - event.getY(1);
+        return (float) Math.toDegrees(Math.atan2(dy, dx));
     }
 
     private int getColFromX(float x) {
@@ -418,25 +520,46 @@ public class ChessView extends View {
         if (selectedCol != -1 && selectedRow != -1) {
             float x = getScreenX(selectedCol);
             float y = getScreenY(selectedRow);
-            canvas.drawRect(x + 5, y + 5, x + cellSide - 5, y + cellSide - 5, selectionPaint);
+            
+            float rotation = getRotationAngle();
+            float rad = (float) Math.toRadians(-rotation);
+            float tx = tiltX * (float)Math.cos(rad) - tiltY * (float)Math.sin(rad);
+            float ty = tiltX * (float)Math.sin(rad) + tiltY * (float)Math.cos(rad);
+
+            canvas.drawRect(x + 5 + tx, y + 5 + ty, x + cellSide - 5 + tx, y + cellSide - 5 + ty, selectionPaint);
         }
+    }
+
+    private void drawCursor(Canvas canvas) {
+        float x = getScreenX(cursorCol);
+        float y = getScreenY(cursorRow);
+        
+        float rotation = getRotationAngle();
+        float rad = (float) Math.toRadians(-rotation);
+        float tx = tiltX * (float)Math.cos(rad) - tiltY * (float)Math.sin(rad);
+        float ty = tiltX * (float)Math.sin(rad) + tiltY * (float)Math.cos(rad);
+
+        canvas.drawRect(x + 10 + tx, y + 10 + ty, x + cellSide - 10 + tx, y + cellSide - 10 + ty, cursorPaint);
     }
 
     private void drawHints(Canvas canvas) {
         if (chessDelegate == null) return;
-        
         int activeCol = isDraggingPiece ? fromCol : selectedCol;
         int activeRow = isDraggingPiece ? fromRow : selectedRow;
-        
         if (activeCol == -1 || activeRow == -1) return;
-        
         List<Movement> moves = chessDelegate.getLegalMoves();
         if (moves == null) return;
+        
+        float rotation = getRotationAngle();
+        float rad = (float) Math.toRadians(-rotation);
+        float tx = tiltX * (float)Math.cos(rad) - tiltY * (float)Math.sin(rad);
+        float ty = tiltX * (float)Math.sin(rad) + tiltY * (float)Math.cos(rad);
+
         for (Movement m : moves) {
             if (m.getX0() == activeCol && m.getY0() == activeRow) {
                 float x = getScreenX(m.getX());
                 float y = getScreenY(m.getY());
-                canvas.drawCircle(x + cellSide/2, y + cellSide/2, cellSide/5, hintPaint);
+                canvas.drawCircle(x + cellSide/2 + tx, y + cellSide/2 + ty, cellSide/5, hintPaint);
             }
         }
     }
@@ -446,29 +569,45 @@ public class ChessView extends View {
             for (int col = 1; col <= 8; col++) {
                 if (chessDelegate != null) {
                     Piece piece = chessDelegate.pieceAt(col, row);
-                    if (piece != null && piece != movingPiece) drawPieceAt(canvas, col, row, piece.getResID());
+                    if (piece != null && piece != movingPiece) {
+                        drawPieceWithGravity(canvas, col, row, piece.getResID());
+                    }
                 }
             }
         }
     }
 
-    private void drawPieceAt(Canvas canvas, int col, int row, int resID) {
+    private void drawPieceWithGravity(Canvas canvas, int col, int row, int resID) {
         Bitmap b = bitmaps.get(resID);
-        if (b != null) {
-            float x = getScreenX(col);
-            float y = getScreenY(row);
-            canvas.drawBitmap(b, null, new RectF(x, y, x + cellSide, y + cellSide), paint);
-        }
-    }
+        if (b == null) return;
 
-    private void loadBitmaps() {
-        int[] resIDs = {R.drawable.bishop_black, R.drawable.bishop_white, R.drawable.king_black, R.drawable.king_white,
-                R.drawable.queen_black, R.drawable.queen_white, R.drawable.rook_black, R.drawable.rook_white,
-                R.drawable.knight_black, R.drawable.knight_white, R.drawable.pawn_black, R.drawable.pawn_white};
-        for (int id : resIDs) {
-            Bitmap b = BitmapFactory.decodeResource(getResources(), id);
-            if (b != null) bitmaps.put(id, b);
-        }
+        float x = getScreenX(col);
+        float y = getScreenY(row);
+        float rotation = getRotationAngle();
+
+        // 1. Draw Shadow (fixed on square, slightly offset)
+        paint.setAlpha(70);
+        paint.setColorFilter(new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN));
+        canvas.save();
+        canvas.rotate(-rotation, x + cellSide / 2f, y + cellSide / 2f);
+        canvas.drawBitmap(b, null, new RectF(x + 6, y + 6, x + cellSide + 6, y + cellSide + 6), paint);
+        canvas.restore();
+        paint.setAlpha(255);
+        paint.setColorFilter(null);
+
+        // 2. Draw Piece (offset by tilt vector adjusted for board rotation)
+        canvas.save();
+        
+        float rad = (float) Math.toRadians(-rotation);
+        float cos = (float) Math.cos(rad);
+        float sin = (float) Math.sin(rad);
+        float tx = tiltX * cos - tiltY * sin;
+        float ty = tiltX * sin + tiltY * cos;
+        
+        canvas.translate(tx, ty);
+        canvas.rotate(-rotation, x + cellSide / 2f, y + cellSide / 2f);
+        canvas.drawBitmap(b, null, new RectF(x, y, x + cellSide, y + cellSide), paint);
+        canvas.restore();
     }
 
     public void setChessDelegate(ChessDelegate delegate) { this.chessDelegate = delegate; }
@@ -477,13 +616,10 @@ public class ChessView extends View {
         Path path;
         Paint paint;
         List<PointF> points = new ArrayList<>();
-
         Stroke(Path path, Paint paint) { this.path = path; this.paint = paint; }
         void addPoint(float x, float y) { points.add(new PointF(x, y)); }
         boolean isNear(float x, float y, float threshold) {
-            for (PointF p : points) {
-                if (Math.hypot(p.x - x, p.y - y) < threshold) return true;
-            }
+            for (PointF p : points) { if (Math.hypot(p.x - x, p.y - y) < threshold) return true; }
             return false;
         }
     }
