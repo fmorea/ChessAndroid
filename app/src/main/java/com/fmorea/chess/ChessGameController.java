@@ -74,6 +74,10 @@ public class ChessGameController implements NetworkHandler.NetworkListener, Ches
         );
     }
 
+    public GameLogic getGameLogic() {
+        return model.getGameLogic();
+    }
+
     // --- NetworkHandler.NetworkListener ---
 
     @Override

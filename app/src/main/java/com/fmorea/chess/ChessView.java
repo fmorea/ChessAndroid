@@ -157,12 +157,17 @@ public class ChessView extends View {
     }
 
     private Matrix getFinalTransformMatrix() {
+        return getFinalTransformMatrixAtZ(0);
+    }
+
+    private Matrix getFinalTransformMatrixAtZ(float z) {
         Matrix matrix = new Matrix();
         matrix.postScale(curZoom, curZoom, getWidth() / 2f, getHeight() / 2f);
         matrix.postTranslate(curPanX * curZoom, curPanY * curZoom);
 
         Camera camera = new Camera();
         camera.save();
+        camera.translate(0, 0, z);
         camera.rotateZ(curRotation + curYaw);
         camera.rotateX(curPitch);
         Matrix m3d = new Matrix();
@@ -182,12 +187,16 @@ public class ChessView extends View {
         updateAnimations();
         updateBoardMetrics();
         
+        drawTable(canvas);
+        
+        // Draw Z-thickness (sides) of the board frame
+        drawBoardThickness(canvas);
+
         canvas.save();
         Matrix finalMatrix = getFinalTransformMatrix();
         canvas.concat(finalMatrix);
         
-        drawTable(canvas);
-        drawBoardFrame(canvas);
+        drawBoardFrameTop(canvas);
         drawChessboard(canvas);
         drawNotation(canvas);
         drawSelection(canvas);
@@ -203,8 +212,37 @@ public class ChessView extends View {
     }
 
     private void drawTable(Canvas canvas) {
+        canvas.save();
+        canvas.concat(getFinalTransformMatrixAtZ(-60)); // Table is below the board
         float size = cellSide * 200f; 
         canvas.drawRect(originX - size, originY - size, originX + size, originY + size, tablePaint);
+        canvas.restore();
+    }
+
+    private void drawBoardThickness(Canvas canvas) {
+        float frameSize = cellSide * 0.4f;
+        float boardSize = cellSide * 8;
+        RectF frame = new RectF(originX - frameSize, originY - frameSize, originX + boardSize + frameSize, originY + boardSize + frameSize);
+        
+        Paint depthPaint = new Paint();
+        depthPaint.setColor(Color.parseColor("#1A0A08"));
+        
+        // Draw layers to simulate thickness
+        for (float z = -40; z < 0; z += 2) {
+            canvas.save();
+            canvas.concat(getFinalTransformMatrixAtZ(z));
+            canvas.drawRect(frame, depthPaint);
+            canvas.restore();
+        }
+    }
+
+    private void drawBoardFrameTop(Canvas canvas) {
+        float frameSize = cellSide * 0.4f;
+        float boardSize = cellSide * 8;
+        RectF frame = new RectF(originX - frameSize, originY - frameSize, originX + boardSize + frameSize, originY + boardSize + frameSize);
+        Paint framePaint = new Paint();
+        framePaint.setShader(new LinearGradient(frame.left, frame.top, frame.right, frame.bottom, Color.parseColor("#4E342E"), Color.parseColor("#21110E"), Shader.TileMode.MIRROR));
+        canvas.drawRect(frame, framePaint);
     }
 
     private boolean isAnimating() {
@@ -262,21 +300,6 @@ public class ChessView extends View {
         canvas.drawText("Z", -10, -zLen - 10, overlayPaint);
         
         canvas.restore();
-    }
-
-    private void drawBoardFrame(Canvas canvas) {
-        float frameSize = cellSide * 0.4f;
-        float boardSize = cellSide * 8;
-        RectF frame = new RectF(originX - frameSize, originY - frameSize, originX + boardSize + frameSize, originY + boardSize + frameSize);
-        Paint framePaint = new Paint();
-        framePaint.setShader(new LinearGradient(frame.left, frame.top, frame.right, frame.bottom, Color.parseColor("#4E342E"), Color.parseColor("#21110E"), Shader.TileMode.MIRROR));
-        
-        Paint depthPaint = new Paint();
-        depthPaint.setColor(Color.parseColor("#1A0A08"));
-        for (int i = 1; i <= 15; i++) {
-            canvas.drawRect(frame.left, frame.top + i, frame.right, frame.bottom + i, depthPaint);
-        }
-        canvas.drawRect(frame, framePaint);
     }
 
     private void drawChessboard(Canvas canvas) {

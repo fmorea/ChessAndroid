@@ -67,7 +67,6 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Board -->
     <com.fmorea.chess.ChessView
         android:id="@+id/chess_view"
         android:layout_width="0dp"
@@ -77,62 +76,59 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/topBar" />
 
-    <!-- Joystick (Single Row, Fixed between board and info bar) -->
     <LinearLayout
         android:id="@+id/navControls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#EEEEEE"
-        android:elevation="2dp"
+        android:background="#E0E0E0"
+        android:elevation="4dp"
         android:gravity="center"
         android:orientation="horizontal"
-        android:padding="6dp"
+        android:padding="12dp"
         app:layout_constraintBottom_toTopOf="@+id/infoContainer"
         app:layout_constraintTop_toBottomOf="@+id/chess_view">
 
-        <!-- Added drag handle to fix "cannot find symbol navDragHandle" -->
         <View
             android:id="@+id/navDragHandle"
-            android:layout_width="20dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="8dp"
-            android:background="#CCCCCC" />
+            android:layout_width="16dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/nav_handle_grip"
+            android:alpha="0.7" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnLeft"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:minWidth="0dp"
-            android:padding="0dp"
-            android:text="&lt;" />
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:background="@drawable/nav_button_bg"
+            android:contentDescription="Left"
+            android:src="@drawable/ic_chevron_left" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnUp"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:minWidth="0dp"
-            android:padding="0dp"
-            android:text="^" />
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/nav_button_bg"
+            android:contentDescription="Up"
+            android:src="@drawable/ic_chevron_up" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnDown"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:minWidth="0dp"
-            android:padding="0dp"
-            android:text="v" />
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/nav_button_bg"
+            android:contentDescription="Down"
+            android:src="@drawable/ic_chevron_down" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnRight"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:minWidth="0dp"
-            android:padding="0dp"
-            android:text="&gt;" />
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:background="@drawable/nav_button_bg"
+            android:contentDescription="Right"
+            android:src="@drawable/ic_chevron_right" />
 
         <Space
             android:layout_width="24dp"
@@ -141,15 +137,14 @@
         <Button
             android:id="@+id/btnSelect"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="60dp"
-            android:layout_height="48dp"
-            android:minWidth="0dp"
-            android:padding="0dp"
+            android:layout_width="70dp"
+            android:layout_height="54dp"
             android:text="OK"
-            android:textSize="14sp" />
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp" />
     </LinearLayout>
 
-    <!-- Info Area -->
     <LinearLayout
         android:id="@+id/infoContainer"
         android:layout_width="match_parent"
@@ -163,7 +158,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:padding="12dp">
 
             <TextView
                 android:id="@+id/textView3"
@@ -171,7 +166,8 @@
                 android:layout_height="wrap_content"
                 android:text="White's turn"
                 android:textColor="#333333"
-                android:textSize="14sp" />
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/textView2"
@@ -179,7 +175,7 @@
                 android:layout_height="wrap_content"
                 android:text="New game"
                 android:textColor="#757575"
-                android:textSize="11sp" />
+                android:textSize="12sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -188,14 +184,14 @@
             android:background="#EEEEEE"
             android:gravity="center"
             android:orientation="horizontal"
-            android:padding="4dp">
+            android:padding="6dp">
 
             <TextView
                 android:id="@+id/textViewNetworkRole"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#616161"
-                android:textSize="9sp"
+                android:textSize="10sp"
                 android:textStyle="bold" />
 
             <Space
@@ -207,7 +203,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#9E9E9E"
-                android:textSize="9sp" />
+                android:textSize="10sp" />
+
+            <Space
+                android:layout_width="20dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/textViewWebAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#3F51B5"
+                android:textSize="10sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 

@@ -9,6 +9,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
@@ -36,6 +37,12 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
     private Sensor accelerometer;
     private Sensor gravitySensor;
     private int drawMode = 0; // 0: OFF, 1: PEN, 2: ERASER
+
+    private ChessHttpServer httpServer;
+    private final Handler joystickHandler = new Handler(Looper.getMainLooper());
+    private Runnable joystickRunnable;
+    private static final int INITIAL_DELAY = 400;
+    private static final int REPEAT_INTERVAL = 100;
 
     private static NetworkHandler sharedTransport;
     public static NetworkHandler getTransport() { return sharedTransport; }
@@ -74,7 +81,16 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         setupSensors();
         
         autoManager.start();
+        
+        // Start the HTTP Server with chat support linked to transport
+        httpServer = new ChessHttpServer(controller, 8080, transport);
+        httpServer.start();
+        
         controller.notifyUI();
+        
+        String serverUrl = "http://" + transport.getMyAddress() + ":8080";
+        binding.textViewWebAddress.setText(serverUrl);
+        Toast.makeText(this, "Web interface at " + serverUrl, Toast.LENGTH_LONG).show();
     }
 
     private void setupSensors() {
@@ -115,12 +131,16 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         binding.button.setOnClickListener(v -> controller.resetGame());
         binding.btnRecenter.setOnClickListener(v -> binding.chessView.recenter());
 
-        // WASD Listeners
-        binding.btnUp.setOnClickListener(v -> binding.chessView.moveCursor(0, 1));
-        binding.btnDown.setOnClickListener(v -> binding.chessView.moveCursor(0, -1));
-        binding.btnLeft.setOnClickListener(v -> binding.chessView.moveCursor(-1, 0));
-        binding.btnRight.setOnClickListener(v -> binding.chessView.moveCursor(1, 0));
-        binding.btnSelect.setOnClickListener(v -> binding.chessView.selectCursor());
+        // Enhanced Joystick Setup
+        setupJoystickButton(binding.btnLeft, -1, 0);
+        setupJoystickButton(binding.btnUp, 0, 1);
+        setupJoystickButton(binding.btnDown, 0, -1);
+        setupJoystickButton(binding.btnRight, 1, 0);
+        
+        binding.btnSelect.setOnClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            binding.chessView.selectCursor();
+        });
 
         // Bottom Menu handling
         binding.bottomAppBar.setOnMenuItemClickListener(item -> {
@@ -165,6 +185,35 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         });
     }
 
+    private void setupJoystickButton(View btn, final int dx, final int dy) {
+        btn.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                    v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(50).start();
+                    binding.chessView.moveCursor(dx, dy);
+                    
+                    joystickRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            binding.chessView.moveCursor(dx, dy);
+                            v.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
+                            joystickHandler.postDelayed(this, REPEAT_INTERVAL);
+                        }
+                    };
+                    joystickHandler.postDelayed(joystickRunnable, INITIAL_DELAY);
+                    return true;
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start();
+                    joystickHandler.removeCallbacks(joystickRunnable);
+                    return true;
+            }
+            return false;
+        });
+    }
+
     private void makeNavControlsDraggable() {
         binding.navDragHandle.setOnTouchListener(new View.OnTouchListener() {
             float dX, dY;
@@ -204,12 +253,17 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (httpServer != null) httpServer.stop();
+    }
+
+    @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_GRAVITY || event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             float x = event.values[0];
             float y = event.values[1];
 
-            // Ottieni la rotazione del display per mappare correttamente gli assi
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             float screenX, screenY;
 
@@ -233,19 +287,18 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
                     break;
             }
 
-            // Calcola il tilt per l'effetto gravità dei pezzi (alto/basso del dispositivo)
             float multiplier = 3.2f;
             binding.chessView.setGravityTilt(-screenX * multiplier, screenY * multiplier);
 
-            // Auto-rotazione della scacchiera basata sulla gravità reale (alto/basso)
             if (model.isAutoRotate()) {
                 if (screenY < -4.5f && !model.isBlackPointOfView()) {
                     model.setBlackPointOfView(true);
-                    refreshBoard();
+                    binding.chessView.setBoardOrientation(true);
                 } else if (screenY > 4.5f && model.isBlackPointOfView()) {
                     model.setBlackPointOfView(false);
-                    refreshBoard();
+                    binding.chessView.setBoardOrientation(false);
                 }
+                binding.chessView.invalidate();
             }
         }
     }
@@ -254,77 +307,55 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     @Override
-    public void showPromotionDialog(int fC, int fR, int tC, int tR, boolean isWhite) {
-        runOnUiThread(() -> {
-            String suffix = isWhite ? "B" : "N";
-            String[] options = {"Regina", "Torre", "Alfiere", "Cavallo"};
-            String[] codes = {"don" + suffix, "tor" + suffix, "alf" + suffix, "cav" + suffix};
-
-            new AlertDialog.Builder(this)
-                .setTitle("Promozione Pedone")
-                .setItems(options, (dialog, which) -> {
-                    controller.movePiece(fC, fR, tC, tR, codes[which]);
-                })
-                .setCancelable(false)
-                .show();
-        });
-    }
-
-    @Override public void refreshBoard() { 
-        runOnUiThread(() -> {
-            binding.chessView.setBoardOrientation(model.isBlackPointOfView());
-            binding.switch2.setChecked(model.isBlackPointOfView());
-            binding.chessView.invalidate();
-        });
+    public void refreshBoard() {
+        binding.chessView.invalidate();
     }
 
     @Override
-    public void updateStatus(int material, boolean inCheck, boolean whiteTurn, Movement lastMove, int legalMovesCount) {
-        runOnUiThread(() -> {
-            StringBuilder sb = new StringBuilder();
-            if (legalMovesCount == 0) {
-                if (inCheck) {
-                    sb.append(whiteTurn ? "SCACCO MATTO! Il Nero ha vinto" : "SCACCO MATTO! Il Bianco ha vinto");
-                } else {
-                    sb.append("PATTA PER STALLO");
-                }
-            } else {
-                if (material > 400) sb.append("Il Bianco sta vincendo");
-                else if (material > 150) sb.append("Bianco in netto vantaggio");
-                else if (material > 50) sb.append("Lieve vantaggio Bianco");
-                else if (material < -400) sb.append("Il Nero sta vincendo");
-                else if (material < -150) sb.append("Nero in netto vantaggio");
-                else if (material < -50) sb.append("Lieve vantaggio Nero");
-                else sb.append("Partita equilibrata");
-                if (inCheck) sb.append(" (SCACCO!)");
-                sb.append("  •  ");
-                sb.append(whiteTurn ? "Tocca al Bianco" : "Tocca al Nero");
-            }
-            binding.textView3.setText(sb.toString());
-            if (lastMove != null && lastMove.getX0() != 0) {
-                binding.textView2.setText(String.format(Locale.getDefault(), "Ultima mossa: [%s%d] -> [%s%d]", 
-                    getLetter(lastMove.getX0()), lastMove.getY0(), getLetter(lastMove.getX()), lastMove.getY()));
-            } else {
-                binding.textView2.setText("Inizia una nuova partita");
-            }
-        });
+    public void updateStatus(int mode, boolean isChecked, boolean whitesTurn, Movement lastMove, int lastMoveCount) {
+        String turn = whitesTurn ? "White's turn" : "Black's turn";
+        binding.textView3.setText(turn);
+        
+        if (lastMove != null) {
+            binding.textView2.setText(String.format(Locale.getDefault(), "Move %d: %s", lastMoveCount, lastMove.toString()));
+        } else {
+            binding.textView2.setText("New game");
+        }
     }
 
-    private String getLetter(int col) { return String.valueOf((char)('a' + col - 1)); }
-
-    @Override public void onConnectionStateChanged(boolean connected) { }
+    @Override
+    public void onConnectionStateChanged(boolean connected) {
+        // UI updates for connection state
+    }
 
     @Override
     public void updateNetworkInfo(String role, String status) {
-        runOnUiThread(() -> {
-            if (binding.switchLoopback.isChecked()) {
-                binding.textViewNetworkRole.setText(getString(R.string.loopback_active));
-            } else {
-                binding.textViewNetworkRole.setText(getString(R.string.net_role_prefix, role));
-            }
-            binding.textViewNetworkStatus.setText(getString(R.string.net_status_prefix, status));
-        });
+        binding.textViewNetworkRole.setText(role);
+        binding.textViewNetworkStatus.setText(status);
     }
 
-    @Override public void onMessage(String msg) { runOnUiThread(() -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()); }
+    @Override
+    public void onMessage(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showPromotionDialog(int fromCol, int fromRow, int toCol, int toRow, boolean isWhite) {
+        String[] items = {"Queen", "Rook", "Bishop", "Knight"};
+        new AlertDialog.Builder(this)
+                .setTitle("Select Promotion")
+                .setItems(items, (dialog, which) -> {
+                    String suffix = isWhite ? "B" : "N";
+                    String promo;
+                    switch (which) {
+                        case 1: promo = "tor" + suffix; break;
+                        case 2: promo = "alf" + suffix; break;
+                        case 3: promo = "cav" + suffix; break;
+                        default: promo = "don" + suffix; break;
+                    }
+                    controller.movePiece(fromCol, fromRow, toCol, toRow, promo);
+                })
+                .setCancelable(false)
+                .show();
+    }
 }
