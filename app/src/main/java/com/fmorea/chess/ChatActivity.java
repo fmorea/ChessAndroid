@@ -58,14 +58,16 @@ public class ChatActivity extends AppCompatActivity implements NetworkHandler.Ne
     }
 
     private void appendLog(String text) {
-        String time = timeFormat.format(new Date());
-        String entry = String.format("[%s] %s\n", time, text);
-        binding.chatLog.append(entry);
-        
-        // Auto-scroll to bottom
-        binding.chatScrollView.post(() -> 
-            binding.chatScrollView.fullScroll(ScrollView.FOCUS_DOWN)
-        );
+        runOnUiThread(() -> {
+            String time = timeFormat.format(new Date());
+            String entry = String.format("[%s] %s\n", time, text);
+            binding.chatLog.append(entry);
+            
+            // Auto-scroll to bottom
+            binding.chatScrollView.post(() -> 
+                binding.chatScrollView.fullScroll(ScrollView.FOCUS_DOWN)
+            );
+        });
     }
 
     // --- NetworkHandler.NetworkListener implementation ---

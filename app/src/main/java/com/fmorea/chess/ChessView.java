@@ -42,7 +42,7 @@ public class ChessView extends View {
     private GestureDetector gestureDetector;
     
     // Animation Targets
-    private float targetPitch = 0f; 
+    private float targetPitch = 0f; // Start flat (2D)
     private float targetYaw = 0f;
     private float targetRotation = 0f; 
     private float targetZoom = 1.0f;
@@ -50,7 +50,7 @@ public class ChessView extends View {
     private float targetPanY = 0f;
 
     // Current Values for Rendering (Smooth interpolation)
-    private float curPitch = 0f;
+    private float curPitch = 0f; // Start flat (2D)
     private float curYaw = 0f;
     private float curRotation = 0f;
     private float curZoom = 1.0f;
@@ -118,7 +118,7 @@ public class ChessView extends View {
     }
 
     private void initTools(Context context) {
-        hintPaint.setColor(Color.argb(200, 255, 235, 59)); // Stronger yellow
+        hintPaint.setColor(Color.argb(200, 255, 235, 59));
         hintPaint.setStyle(Paint.Style.FILL);
         hintPaint.setAntiAlias(true);
         
@@ -142,7 +142,7 @@ public class ChessView extends View {
         penPaint.setStrokeCap(Paint.Cap.ROUND);
         penPaint.setAntiAlias(true);
 
-        tablePaint.setColor(Color.parseColor("#F5F5F5")); 
+        tablePaint.setColor(Color.parseColor("#BDBDBD")); 
         tablePaint.setAntiAlias(true);
 
         scaleDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
@@ -167,7 +167,7 @@ public class ChessView extends View {
 
         Camera camera = new Camera();
         camera.save();
-        camera.translate(0, 0, z);
+        camera.translate(0, 0, z); // Positive Z is further away
         camera.rotateZ(curRotation + curYaw);
         camera.rotateX(curPitch);
         Matrix m3d = new Matrix();
@@ -187,9 +187,10 @@ public class ChessView extends View {
         updateAnimations();
         updateBoardMetrics();
         
+        // Draw the environment
         drawTable(canvas);
         
-        // Draw Z-thickness (sides) of the board frame
+        // Draw the 3D block of the board
         drawBoardThickness(canvas);
 
         canvas.save();
@@ -213,27 +214,63 @@ public class ChessView extends View {
 
     private void drawTable(Canvas canvas) {
         canvas.save();
-        canvas.concat(getFinalTransformMatrixAtZ(-60)); // Table is below the board
-        float size = cellSide * 200f; 
+        canvas.concat(getFinalTransformMatrixAtZ(60)); // Table is below the board (Z=60)
+        float size = cellSide * 30f; 
         canvas.drawRect(originX - size, originY - size, originX + size, originY + size, tablePaint);
+        
+        // Soft shadow for the board
+        Paint shadowPaint = new Paint();
+        shadowPaint.setColor(Color.argb(80, 0, 0, 0));
+        float frameSize = cellSide * 0.4f;
+        float boardSize = cellSide * 8;
+        canvas.drawRect(originX - frameSize + 15, originY - frameSize + 15, originX + boardSize + frameSize + 15, originY + boardSize + frameSize + 15, shadowPaint);
         canvas.restore();
     }
 
     private void drawBoardThickness(Canvas canvas) {
         float frameSize = cellSide * 0.4f;
         float boardSize = cellSide * 8;
-        RectF frame = new RectF(originX - frameSize, originY - frameSize, originX + boardSize + frameSize, originY + boardSize + frameSize);
+        float x1 = originX - frameSize;
+        float y1 = originY - frameSize;
+        float x2 = originX + boardSize + frameSize;
+        float y2 = originY + boardSize + frameSize;
+        float boardDepth = 50f; // Thickness in world units
+
+        Paint sidePaint = new Paint();
+        sidePaint.setAntiAlias(true);
+
+        float[] corners = { x1, y1, x2, y1, x2, y2, x1, y2 };
+        float[] ptsTop = new float[8];
+        float[] ptsBottom = new float[8];
         
-        Paint depthPaint = new Paint();
-        depthPaint.setColor(Color.parseColor("#1A0A08"));
+        getFinalTransformMatrixAtZ(0).mapPoints(ptsTop, corners);
+        getFinalTransformMatrixAtZ(boardDepth).mapPoints(ptsBottom, corners);
         
-        // Draw layers to simulate thickness
-        for (float z = -40; z < 0; z += 2) {
-            canvas.save();
-            canvas.concat(getFinalTransformMatrixAtZ(z));
-            canvas.drawRect(frame, depthPaint);
-            canvas.restore();
-        }
+        // Order of vertices for quads: Top1, Top2, Bottom2, Bottom1
+        // 0:TL, 1:TR, 2:BR, 3:BL
+        
+        // Right face (Edge 1-2)
+        drawQuad(canvas, ptsTop[2], ptsTop[3], ptsTop[4], ptsTop[5], ptsBottom[4], ptsBottom[5], ptsBottom[2], ptsBottom[3], Color.parseColor("#3D2A28"), sidePaint);
+        // Bottom face (Edge 2-3) - Front if viewing from south
+        drawQuad(canvas, ptsTop[4], ptsTop[5], ptsTop[6], ptsTop[7], ptsBottom[6], ptsBottom[7], ptsBottom[4], ptsBottom[5], Color.parseColor("#2D1A18"), sidePaint);
+        // Left face (Edge 3-0)
+        drawQuad(canvas, ptsTop[6], ptsTop[7], ptsTop[0], ptsTop[1], ptsBottom[0], ptsBottom[1], ptsBottom[6], ptsBottom[7], Color.parseColor("#3D2A28"), sidePaint);
+        // Top face (Edge 0-1) - Back face
+        drawQuad(canvas, ptsTop[0], ptsTop[1], ptsTop[2], ptsTop[3], ptsBottom[2], ptsBottom[3], ptsBottom[0], ptsBottom[1], Color.parseColor("#1D0A08"), sidePaint);
+    }
+
+    private void drawQuad(Canvas canvas, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, int color, Paint paint) {
+        paint.setColor(color);
+        Path path = new Path();
+        path.moveTo(x1, y1);
+        path.lineTo(x2, y2);
+        path.lineTo(x3, y3);
+        path.lineTo(x4, y4);
+        path.close();
+        canvas.save();
+        canvas.setMatrix(new Matrix()); // Draw in raw pixels using calculated points
+        canvas.drawPath(path, paint);
+        canvas.restore();
     }
 
     private void drawBoardFrameTop(Canvas canvas) {
@@ -266,7 +303,6 @@ public class ChessView extends View {
     private void drawOverlays(Canvas canvas) {
         canvas.save();
         canvas.translate(160, getHeight() - 160);
-        
         Camera compCamera = new Camera();
         compCamera.save();
         compCamera.rotateX(curPitch);
@@ -274,31 +310,20 @@ public class ChessView extends View {
         Matrix compMatrix = new Matrix();
         compCamera.getMatrix(compMatrix);
         compCamera.restore();
-        
         overlayPaint.setColor(Color.BLACK);
         canvas.drawCircle(0, 0, 5, overlayPaint);
-
-        // X Axis (Red)
         float[] ptsX = {0, 0, 70, 0};
         compMatrix.mapPoints(ptsX);
         overlayPaint.setColor(Color.RED);
         overlayPaint.setStrokeWidth(5f);
         canvas.drawLine(ptsX[0], ptsX[1], ptsX[2], ptsX[3], overlayPaint);
-        canvas.drawText("X", ptsX[2] + 5, ptsX[3], overlayPaint);
-
-        // Y Axis (Green)
         float[] ptsY = {0, 0, 0, 70};
         compMatrix.mapPoints(ptsY);
         overlayPaint.setColor(Color.GREEN);
         canvas.drawLine(ptsY[0], ptsY[1], ptsY[2], ptsY[3], overlayPaint);
-        canvas.drawText("Y", ptsY[2], ptsY[3] + 25, overlayPaint);
-
-        // Z Axis (Blue) 
         overlayPaint.setColor(Color.BLUE);
         float zLen = 70f * (float) Math.cos(Math.toRadians(curPitch));
         canvas.drawLine(0, 0, 0, -zLen, overlayPaint);
-        canvas.drawText("Z", -10, -zLen - 10, overlayPaint);
-        
         canvas.restore();
     }
 
@@ -347,13 +372,11 @@ public class ChessView extends View {
                 float cx = getScreenX(m.getX()) + cellSide / 2;
                 float cy = getScreenY(m.getY()) + cellSide / 2;
                 if (chessDelegate.pieceAt(m.getX(), m.getY()) != null) {
-                    // Ring for capture moves
                     hintPaint.setStyle(Paint.Style.STROKE);
                     hintPaint.setStrokeWidth(cellSide / 8f);
                     canvas.drawCircle(cx, cy, cellSide / 3.5f, hintPaint);
                     hintPaint.setStyle(Paint.Style.FILL);
                 } else {
-                    // Dot for empty squares
                     canvas.drawCircle(cx, cy, cellSide / 4.5f, hintPaint);
                 }
             }
@@ -386,12 +409,11 @@ public class ChessView extends View {
 
     private void drawPieceBillboardAt(Canvas canvas, float x, float y, Bitmap b) {
         if (b == null) return;
-        paint.setAlpha(60);
+        paint.setAlpha(80);
         paint.setColorFilter(new PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN));
         canvas.save();
-        canvas.drawBitmap(b, null, new RectF(x + 8, y + 8, x + cellSide + 8, y + cellSide + 8), paint);
+        canvas.drawBitmap(b, null, new RectF(x + 10, y + 10, x + cellSide + 10, y + cellSide + 10), paint);
         canvas.restore();
-        
         paint.setAlpha(255); paint.setColorFilter(null);
         canvas.save(); canvas.translate(x + cellSide/2, y + cellSide/2);
         Camera pieceCamera = new Camera(); pieceCamera.save();
@@ -414,118 +436,59 @@ public class ChessView extends View {
             float curY = (event.getY(0) + event.getY(1)) / 2f;
             float curDist = (float) Math.hypot(event.getX(0) - event.getX(1), event.getY(0) - event.getY(1));
             float curAngle = calculateAngle(event);
-
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_POINTER_DOWN:
                     lastTwoFingerX = curX; lastTwoFingerY = curY;
                     lastTwoFingerAngle = curAngle; lastTwoFingerDist = curDist;
-                    isTwoFingerDragging = true;
-                    isDraggingPiece = false;
+                    isTwoFingerDragging = true; isDraggingPiece = false;
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (isTwoFingerDragging) {
                         float dx = curX - lastTwoFingerX;
                         float dy = curY - lastTwoFingerY;
                         float da = calculateDeltaAngle(curAngle, lastTwoFingerAngle);
-                        targetPanX += dx / curZoom;
-                        targetPanY += dy / curZoom;
+                        targetPanX += dx / curZoom; targetPanY += dy / curZoom;
                         targetYaw -= da * 1.5f;
-                        if (lastTwoFingerDist > 0) {
-                            targetZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, targetZoom * (curDist / lastTwoFingerDist)));
-                        }
-                        if (Math.abs(dy) > Math.abs(dx) * 1.5f) {
-                            targetPitch = Math.max(-20, Math.min(95, targetPitch + dy * 0.3f));
-                        }
+                        if (lastTwoFingerDist > 0) targetZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, targetZoom * (curDist / lastTwoFingerDist)));
+                        if (Math.abs(dy) > Math.abs(dx) * 1.5f) targetPitch = Math.max(-10, Math.min(95, targetPitch + dy * 0.3f));
                         lastTwoFingerX = curX; lastTwoFingerY = curY;
                         lastTwoFingerAngle = curAngle; lastTwoFingerDist = curDist;
                         invalidate();
                     }
                     break;
-                case MotionEvent.ACTION_POINTER_UP: 
-                    isTwoFingerDragging = false;
-                    break;
+                case MotionEvent.ACTION_POINTER_UP: isTwoFingerDragging = false; break;
             }
             return true;
         }
-
-        float rawX = event.getX();
-        float rawY = event.getY();
-        float[] pts = {rawX, rawY};
-        Matrix inv = new Matrix(); 
-        getFinalTransformMatrix().invert(inv); 
-        inv.mapPoints(pts);
-        float x = pts[0]; float y = pts[1];
-
+        float[] pts = {event.getX(), event.getY()};
+        Matrix inv = new Matrix(); getFinalTransformMatrix().invert(inv); inv.mapPoints(pts);
+        float x = pts[0], y = pts[1];
         if (isPenMode || isEraserMode) {
              switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    if (isPenMode) {
-                        Path path = new Path();
-                        path.moveTo(x, y);
-                        Stroke stroke = new Stroke(path, new Paint(penPaint));
-                        stroke.addPoint(x, y);
-                        strokes.add(stroke);
-                    } else {
-                        eraseStrokesAt(x, y);
-                    }
-                    break;
+                    if (isPenMode) { Path path = new Path(); path.moveTo(x, y); Stroke stroke = new Stroke(path, new Paint(penPaint)); stroke.addPoint(x, y); strokes.add(stroke); }
+                    else eraseStrokesAt(x, y); break;
                 case MotionEvent.ACTION_MOVE:
-                    if (isPenMode && !strokes.isEmpty()) {
-                        Stroke last = strokes.get(strokes.size() - 1);
-                        last.path.lineTo(x, y);
-                        last.addPoint(x, y);
-                    } else if (isEraserMode) {
-                        eraseStrokesAt(x, y);
-                    }
-                    break;
+                    if (isPenMode && !strokes.isEmpty()) { Stroke last = strokes.get(strokes.size() - 1); last.path.lineTo(x, y); last.addPoint(x, y); }
+                    else if (isEraserMode) eraseStrokesAt(x, y); break;
             }
-            invalidate();
-            return true;
+            invalidate(); return true;
         }
-
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                touchStartX = rawX;
-                touchStartY = rawY;
+                touchStartX = event.getX(); touchStartY = event.getY();
                 fromCol = getColFromX(x); fromRow = getRowFromY(y);
                 if (chessDelegate != null) {
                     movingPiece = chessDelegate.pieceAt(fromCol, fromRow);
-                    if (movingPiece != null) {
-                        isDraggingPiece = true;
-                        movingPieceBitmap = bitmaps.get(movingPiece.getResID());
-                        movingPieceX = x; movingPieceY = y;
-                        // Select immediately for hints
-                        selectedCol = fromCol; selectedRow = fromRow;
-                    }
+                    if (movingPiece != null) { isDraggingPiece = true; movingPieceBitmap = bitmaps.get(movingPiece.getResID()); movingPieceX = x; movingPieceY = y; selectedCol = fromCol; selectedRow = fromRow; }
                 }
                 break;
-            case MotionEvent.ACTION_MOVE:
-                if (isDraggingPiece) {
-                    movingPieceX = x; movingPieceY = y;
-                    invalidate();
-                }
-                break;
+            case MotionEvent.ACTION_MOVE: if (isDraggingPiece) { movingPieceX = x; movingPieceY = y; invalidate(); } break;
             case MotionEvent.ACTION_UP:
-                float dist = (float) Math.hypot(rawX - touchStartX, rawY - touchStartY);
-                if (dist < TAP_THRESHOLD) {
-                    isDraggingPiece = false;
-                    handleTap(x, y);
-                } else if (isDraggingPiece) {
-                    if (chessDelegate != null) {
-                        if (chessDelegate.movePiece(fromCol, fromRow, getColFromX(x), getRowFromY(y))) {
-                            selectedCol = -1; selectedRow = -1;
-                        }
-                    }
-                    isDraggingPiece = false;
-                    movingPiece = null;
-                }
-                invalidate();
-                break;
-            case MotionEvent.ACTION_CANCEL:
-                isDraggingPiece = false;
-                movingPiece = null;
-                invalidate();
-                break;
+                float dist = (float) Math.hypot(event.getX() - touchStartX, event.getY() - touchStartY);
+                if (dist < TAP_THRESHOLD) { isDraggingPiece = false; handleTap(x, y); }
+                else if (isDraggingPiece) { if (chessDelegate != null && chessDelegate.movePiece(fromCol, fromRow, getColFromX(x), getRowFromY(y))) { selectedCol = -1; selectedRow = -1; } isDraggingPiece = false; movingPiece = null; }
+                invalidate(); break;
         }
         return true;
     }
@@ -533,58 +496,20 @@ public class ChessView extends View {
     private void eraseStrokesAt(float x, float y) {
         float threshold = cellSide / 2;
         Iterator<Stroke> it = strokes.iterator();
-        while (it.hasNext()) {
-            if (it.next().isNear(x, y, threshold)) {
-                it.remove();
-            }
-        }
+        while (it.hasNext()) { if (it.next().isNear(x, y, threshold)) it.remove(); }
     }
 
-    private float calculateAngle(MotionEvent event) {
-        float dx = event.getX(0) - event.getX(1);
-        float dy = event.getY(0) - event.getY(1);
-        return (float) Math.toDegrees(Math.atan2(dy, dx));
-    }
-
-    private float calculateDeltaAngle(float cur, float last) {
-        float delta = cur - last;
-        while (delta > 180) delta -= 360;
-        while (delta < -180) delta += 360;
-        return delta;
-    }
-
-    private void updateBoardMetrics() {
-        float boardSide = Math.min(getWidth(), getHeight()) * 0.85f;
-        cellSide = boardSide / 8f;
-        originX = (getWidth() - boardSide) / 2f; originY = (getHeight() - boardSide) / 2f;
-    }
-
+    private float calculateAngle(MotionEvent event) { return (float) Math.toDegrees(Math.atan2(event.getY(0) - event.getY(1), event.getX(0) - event.getX(1))); }
+    private float calculateDeltaAngle(float cur, float last) { float delta = cur - last; while (delta > 180) delta -= 360; while (delta < -180) delta += 360; return delta; }
+    private void updateBoardMetrics() { float boardSide = Math.min(getWidth(), getHeight()) * 0.85f; cellSide = boardSide / 8f; originX = (getWidth() - boardSide) / 2f; originY = (getHeight() - boardSide) / 2f; }
     private int getColFromX(float x) { return (int) ((x - originX) / cellSide) + 1; }
     private int getRowFromY(float y) { return 8 - (int) ((y - originY) / cellSide); }
     private float getScreenX(int col) { return originX + (col - 1) * cellSide; }
     private float getScreenY(int row) { return originY + (8 - row) * cellSide; }
-
-    public void setChessDelegate(ChessDelegate delegate) { 
-        this.chessDelegate = delegate; 
-        if (delegate != null) setBoardOrientation(delegate.blackPointOfView());
-    }
-    
-    public void moveCursor(int dx, int dy) {
-        cursorCol = Math.max(1, Math.min(8, cursorCol + dx));
-        cursorRow = Math.max(1, Math.min(8, cursorRow + dy));
-        invalidate();
-    }
-
-    public void selectCursor() {
-        float[] pts = {getScreenX(cursorCol) + cellSide/2, getScreenY(cursorRow) + cellSide/2};
-        handleTap(pts[0], pts[1]);
-    }
-
-    public void recenter() {
-        targetPitch = 0f; targetYaw = 0f; targetRotation = 0f; targetZoom = 1.0f; targetPanX = 0f; targetPanY = 0f;
-        invalidate();
-    }
-
+    public void setChessDelegate(ChessDelegate delegate) { this.chessDelegate = delegate; if (delegate != null) setBoardOrientation(delegate.blackPointOfView()); }
+    public void moveCursor(int dx, int dy) { cursorCol = Math.max(1, Math.min(8, cursorCol + dx)); cursorRow = Math.max(1, Math.min(8, cursorRow + dy)); invalidate(); }
+    public void selectCursor() { float[] pts = {getScreenX(cursorCol) + cellSide/2, getScreenY(cursorRow) + cellSide/2}; handleTap(pts[0], pts[1]); }
+    public void recenter() { targetPitch = 0f; targetYaw = 0f; targetRotation = 0f; targetZoom = 1.0f; targetPanX = 0f; targetPanY = 0f; invalidate(); }
     public void zoomIn() { targetZoom = Math.min(MAX_ZOOM, targetZoom * 1.3f); invalidate(); }
     public void zoomOut() { targetZoom = Math.max(MIN_ZOOM, targetZoom / 1.3f); invalidate(); }
     public void setBoardOrientation(boolean isBlack) { targetRotation = isBlack ? 180f : 0f; invalidate(); }
@@ -594,34 +519,20 @@ public class ChessView extends View {
 
     private void handleTap(float x, float y) {
         int col = getColFromX(x); int row = getRowFromY(y);
-        if (col < 1 || col > 8 || row < 1 || row > 8) {
-            selectedCol = -1; selectedRow = -1;
-        } else {
-            if (selectedCol == col && selectedRow == row) {
-                selectedCol = -1; selectedRow = -1;
-            } else if (selectedCol != -1 && chessDelegate != null && chessDelegate.movePiece(selectedCol, selectedRow, col, row)) {
-                selectedCol = -1; selectedRow = -1;
-            } else {
-                Piece p = (chessDelegate != null) ? chessDelegate.pieceAt(col, row) : null;
-                if (p != null) { selectedCol = col; selectedRow = row; }
-                else { selectedCol = -1; selectedRow = -1; }
-            }
+        if (col < 1 || col > 8 || row < 1 || row > 8) { selectedCol = -1; selectedRow = -1; }
+        else {
+            if (selectedCol == col && selectedRow == row) { selectedCol = -1; selectedRow = -1; }
+            else if (selectedCol != -1 && chessDelegate != null && chessDelegate.movePiece(selectedCol, selectedRow, col, row)) { selectedCol = -1; selectedRow = -1; }
+            else { Piece p = (chessDelegate != null) ? chessDelegate.pieceAt(col, row) : null; if (p != null) { selectedCol = col; selectedRow = row; } else { selectedCol = -1; selectedRow = -1; } }
         }
         invalidate();
     }
 
-    private static class PiecePos {
-        Piece piece; int col, row; float projY;
-        PiecePos(Piece p, int c, int r, float py) { piece = p; col = c; row = r; projY = py; }
-    }
-
+    private static class PiecePos { Piece piece; int col, row; float projY; PiecePos(Piece p, int c, int r, float py) { piece = p; col = c; row = r; projY = py; } }
     private static class Stroke {
         Path path; Paint paint; List<PointF> points = new ArrayList<>();
         Stroke(Path path, Paint paint) { this.path = path; this.paint = paint; }
         void addPoint(float x, float y) { points.add(new PointF(x, y)); }
-        boolean isNear(float x, float y, float threshold) {
-            for (PointF p : points) { if (Math.hypot(p.x - x, p.y - y) < threshold) return true; }
-            return false;
-        }
+        boolean isNear(float x, float y, float threshold) { for (PointF p : points) { if (Math.hypot(p.x - x, p.y - y) < threshold) return true; } return false; }
     }
 }

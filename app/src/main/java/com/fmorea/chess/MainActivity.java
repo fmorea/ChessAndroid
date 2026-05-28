@@ -82,8 +82,8 @@ public class MainActivity extends AppCompatActivity implements ChessGameControll
         
         autoManager.start();
         
-        // Start the HTTP Server with chat support linked to transport
-        httpServer = new ChessHttpServer(controller, 8080, transport);
+        // Start the Mirror-HTTP Server linked to UI binding
+        httpServer = new ChessHttpServer(this, binding, controller, 8080, transport);
         httpServer.start();
         
         controller.notifyUI();
